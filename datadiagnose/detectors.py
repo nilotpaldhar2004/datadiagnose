@@ -86,12 +86,7 @@ def detect_missing_values(data, col_name, col_report, diagnosis):
     diagnosis.add_suggestion(fix)
 
 
-
-
 # 2. OUTLIER DETECTOR
-
-
-
 def detect_outliers(data, col_name, col_report, diagnosis, is_target=False):
     """
     Detect outliers in a numeric column using IQR and Z-score methods.
@@ -254,11 +249,7 @@ def detect_skewness(data, col_name, col_report, diagnosis, is_target=False):
     diagnosis.add_suggestion(fix)
 
 
-
 # 4. CLASS IMBALANCE DETECTOR
-
-
-
 def detect_class_imbalance(data, col_name, col_report, diagnosis,
                            is_target=False):
     """
@@ -704,4 +695,3 @@ def suggest_models(dataset, col_names, target_col, diagnosis):
     if task == 'binary_classification' and n_rows > 0:
         # Check if the suggest_models should trigger an evaluation metric warning
         diagnosis.add_suggestion("For classification: evaluate using ROC-AUC or F1-Score instead of Accuracy.")
-

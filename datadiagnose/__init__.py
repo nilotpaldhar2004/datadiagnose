@@ -78,5 +78,3 @@ __all__ = [
     'Issue',
     'ColumnReport',
 ]
-
-

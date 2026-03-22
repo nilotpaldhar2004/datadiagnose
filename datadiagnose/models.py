@@ -280,4 +280,3 @@ class DiagnosisReport:
         df = df.transpose()
 
         return df
-
