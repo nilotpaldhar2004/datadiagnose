@@ -19,7 +19,6 @@ import math
 # ──────────────────────────────────────────────────────────────
 # TYPE DETECTION
 # ──────────────────────────────────────────────────────────────
-
 def is_missing(value):
     """
     Return True if a value should be considered missing.
