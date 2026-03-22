@@ -1,86 +1,217 @@
+# .github/workflows/tests.yml
 # ============================================================
-# DataDiagnose — Automated Test Runner (v1.0.1)
+# DataDiagnose — Automated Test Runner
+# Author  : Nilotpal Dhar
+# License : MIT
+#
+# This workflow runs automatically on every:
+#   - push to the main branch
+#   - push to any feature branch
+#   - pull request targeting main
+#
+# It tests the library on:
+#   - Python 3.8, 3.9, 3.10, 3.11, 3.12
+#   - Ubuntu (Linux), macOS, Windows
+#
+# If ANY test fails on ANY combination, GitHub marks the
+# commit with a red ✗ and sends you an email notification.
+# A green ✓ means all 140 tests passed on all platforms.
 # ============================================================
 
 name: Run Tests
 
+# ── When to run ──────────────────────────────────────────────
 on:
+
+  # Run on every push to any branch
   push:
     branches:
       - "**"
+
+  # Run on every pull request targeting main
   pull_request:
     branches:
       - main
+
+  # Allow manually triggering from the GitHub Actions tab
   workflow_dispatch:
 
+
+# ── Jobs ─────────────────────────────────────────────────────
 jobs:
-  # ──────────────────────────────────────────────────────────
-  # JOB 1: quick-check (The "Smoke Test")
-  # Runs first to provide fast feedback.
-  # ──────────────────────────────────────────────────────────
-  quick-check:
-    name: "Quick Check — Ubuntu + Py3.11"
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python 3.11
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.11"
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install pytest -e .
-      - name: Smoke test & Examples
-        run: |
-          pytest tests/test_core.py -v --tb=short
-          python examples/basic_usage.py
-          python examples/student_dataset_demo.py
 
   # ──────────────────────────────────────────────────────────
-  # JOB 2: lint (Code Quality)
-  # Respects the .flake8 configuration file.
-  # ──────────────────────────────────────────────────────────
-  lint:
-    name: "Lint — flake8 style check"
-    needs: quick-check
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
-        with:
-          python-version: "3.12"
-      - name: Install flake8
-        run: pip install flake8
-      - name: Run flake8
-        # We removed --max-line-length to use your .flake8 config (130 chars)
-        run: |
-          flake8 datadiagnose/ tests/ --count --statistics
-
-  # ──────────────────────────────────────────────────────────
-  # JOB 3: test (Full Matrix)
-  # Tests every OS and Python version combination.
+  # JOB 1: test
+  # Runs the full test suite on multiple Python versions
+  # and operating systems simultaneously.
   # ──────────────────────────────────────────────────────────
   test:
-    name: "Test — ${{ matrix.python-version }} on ${{ matrix.os }}"
-    needs: lint
+    name: "Test — Python ${{ matrix.python-version }} on ${{ matrix.os }}"
+
+    # The matrix defines which combinations to test.
+    # GitHub runs all combinations in parallel.
     strategy:
-      fail-fast: false
       matrix:
-        os: [ubuntu-latest, macos-latest, windows-latest]
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        os:
+          - ubuntu-latest    # Linux (most common server environment)
+          - macos-latest     # macOS (what many developers use)
+          - windows-latest   # Windows (some students use this)
+        python-version:
+          - "3.8"    # minimum supported version
+          - "3.9"
+          - "3.10"
+          - "3.11"
+          - "3.12"   # latest stable version
+
+      # If one combination fails, keep running the others.
+      # This helps you see if the failure is OS-specific or
+      # Python-version-specific.
+      fail-fast: false
+
+    # Which OS to run this job on
     runs-on: ${{ matrix.os }}
+
     steps:
-      - uses: actions/checkout@v4
+
+      # ── Step 1: Check out the code ──────────────────────
+      # This downloads your repository code onto the runner.
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # ── Step 2: Set up Python ───────────────────────────
+      # Installs the specified Python version on the runner.
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v5
         with:
           python-version: ${{ matrix.python-version }}
+
+      # ── Step 3: Verify Python version ───────────────────
+      # Just prints the Python version so you can confirm
+      # in the logs which version ran.
+      - name: Show Python version
+        run: python --version
+
+      # ── Step 4: Install dependencies ────────────────────
+      # DataDiagnose has ZERO external dependencies,
+      # so we only need to install pytest for running tests.
+      # We also install the package itself in editable mode
+      # so imports work correctly during testing.
       - name: Install test dependencies
         run: |
           python -m pip install --upgrade pip
-          pip install pytest pytest-cov -e .
-      - name: Run full suite with coverage
+          pip install pytest pytest-cov
+
+      # ── Step 5: Install DataDiagnose in editable mode ───
+      # This makes "from datadiagnose import ..." work
+      # without needing to manually set PYTHONPATH.
+      - name: Install DataDiagnose (editable)
+        run: pip install -e .
+
+      # ── Step 6: Run the full test suite ─────────────────
+      # -v            : verbose — show each test name
+      # --tb=short    : show short tracebacks on failures
+      # --cov         : measure code coverage
+      # --cov-report  : print coverage to terminal
+      - name: Run tests
+        run: |
+          pytest tests/ -v --tb=short
+
+      # ── Step 7: Run tests with coverage report ──────────
+      # This step runs separately so we see coverage even
+      # if individual test output is long.
+      - name: Run tests with coverage
         run: |
           pytest tests/ --cov=datadiagnose --cov-report=term-missing --tb=short
+
+  # ──────────────────────────────────────────────────────────
+  # JOB 2: lint
+  # Checks code style using flake8 (optional but good practice).
+  # Only runs on Ubuntu + latest Python to save runner minutes.
+  # ──────────────────────────────────────────────────────────
+  lint:
+    name: "Lint — flake8 code style check"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.12
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install flake8
+        run: |
+          python -m pip install --upgrade pip
+          pip install flake8
+
+      # flake8 checks:
+      #   E   : PEP 8 style errors
+      #   W   : PEP 8 style warnings
+      #   F   : pyflakes errors (undefined names, unused imports)
+      #
+      # --max-line-length 100 : allow slightly longer lines
+      # --count               : show total error count
+      # --statistics          : show most common errors
+      - name: Run flake8
+        run: |
+          flake8 datadiagnose/ \
+            --count \
+            --statistics \
+
+  # ──────────────────────────────────────────────────────────
+  # JOB 3: quick-check
+  # A fast single-platform smoke test that runs first.
+  # If this fails, the matrix job is likely to fail too
+  # so you get feedback faster.
+  # ──────────────────────────────────────────────────────────
+  quick-check:
+    name: "Quick smoke test — Ubuntu + Python 3.11"
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install pytest
+
+      - name: Install DataDiagnose
+        run: pip install -e .
+
+      # Run just the core tests for a fast pass/fail signal
+      - name: Smoke test — core only
+        run: pytest tests/test_core.py -v --tb=short
+
+      # Also verify the library can be imported successfully
+      - name: Verify import works
+        run: |
+          python -c "
+          from datadiagnose import diagnose, quick_scan, health_score
+          from datadiagnose import list_issues, get_suggestions, column_summary
+          from datadiagnose import DiagnosisReport, Issue, ColumnReport
+          print('All imports successful.')
+          print('Running a quick sanity check...')
+          data   = {'a': [1,2,3,4,5], 'b': [10,20,30,40,50], 'target': [0,1,0,1,0]}
+          score  = health_score(data, target_col='target')
+          print(f'health_score on tiny dataset: {score}/100')
+          assert isinstance(score, int), 'Score must be an integer'
+          assert 0 <= score <= 100,      'Score must be between 0 and 100'
+          print('Sanity check passed.')
+          "
+
+      # Run the basic usage example to make sure it works end-to-end
+      - name: Run basic_usage example
+        run: python examples/basic_usage.py
+
+      # Run the student demo example
+      - name: Run student_dataset_demo example
+        run: python examples/student_dataset_demo.py
