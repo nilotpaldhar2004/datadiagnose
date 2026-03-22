@@ -26,7 +26,7 @@ License : MIT
 from .models import Issue
 from .utils  import (
     is_missing, to_numeric_list, non_null_values,
-    mean, median, std, skewness, iqr_bounds, zscore_outliers,
+    skewness, iqr_bounds, zscore_outliers,
     pearson_correlation, matches_any_keyword,
     LEAKY_KEYWORDS, DATETIME_KEYWORDS, TEXT_KEYWORDS, GEO_KEYWORDS,
 )
@@ -89,6 +89,8 @@ def detect_missing_values(data, col_name, col_report, diagnosis):
 
 
 # 2. OUTLIER DETECTOR
+
+
 
 def detect_outliers(data, col_name, col_report, diagnosis, is_target=False):
     """
@@ -251,7 +253,11 @@ def detect_skewness(data, col_name, col_report, diagnosis, is_target=False):
     ))
     diagnosis.add_suggestion(fix)
 
+
+
 # 4. CLASS IMBALANCE DETECTOR
+
+
 
 def detect_class_imbalance(data, col_name, col_report, diagnosis,
                            is_target=False):
@@ -510,8 +516,8 @@ def detect_constant_columns(dataset, col_names, diagnosis):
             ))
             diagnosis.add_suggestion(fix)
 
-# 8. HIGH CARDINALITY DETECTOR
 
+# 8. HIGH CARDINALITY DETECTOR
 def detect_high_cardinality(dataset, col_names, diagnosis,
                              unique_ratio_threshold=0.9):
     """
@@ -571,9 +577,7 @@ def detect_high_cardinality(dataset, col_names, diagnosis,
             diagnosis.add_suggestion(fix)
 
 
-
 # FEATURE ENGINEERING HINTS
-
 def suggest_feature_engineering(col_names, diagnosis):
     """
     Scan column names for patterns that suggest feature engineering
@@ -608,9 +612,7 @@ def suggest_feature_engineering(col_names, diagnosis):
             )
 
 
-
 # MODEL RECOMMENDATION ENGINE
-
 def suggest_models(dataset, col_names, target_col, diagnosis):
     """
     Recommend appropriate ML model types based on dataset characteristics.
@@ -702,3 +704,4 @@ def suggest_models(dataset, col_names, target_col, diagnosis):
     if task == 'binary_classification' and n_rows > 0:
         # Check if the suggest_models should trigger an evaluation metric warning
         diagnosis.add_suggestion("For classification: evaluate using ROC-AUC or F1-Score instead of Accuracy.")
+

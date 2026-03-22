@@ -42,13 +42,30 @@ License : MIT
 GitHub  : https://github.com/nilotpaldhar2004/datadiagnose
 """
 
+# ── Public API imports ────────────────────────────────────────
+# FIX: Moved these to the top!
+from .core import (
+    diagnose,
+    get_stats_df,
+    quick_scan,
+    health_score,
+    list_issues,
+    get_suggestions,
+    column_summary,
+)
+
+from .models import (
+    DiagnosisReport,
+    Issue,
+    ColumnReport
+)
+
 # ── Version info ──────────────────────────────────────────────
-__version__ = '1.0.1'  # Updated to reflect your new changes
+__version__ = '1.0.1'
 __author__  = 'Nilotpal Dhar'
 __license__ = 'MIT'
 
 # ── Public API ────────────────────────────────────────────────
-# Updated __all__ to include get_stats_df
 __all__ = [
     'diagnose',
     'get_stats_df',
@@ -62,19 +79,4 @@ __all__ = [
     'ColumnReport',
 ]
 
-# ── Public API imports ────────────────────────────────────────
-from .core import (
-    diagnose,
-    get_stats_df,  # Added the new DataFrame helper
-    quick_scan,
-    health_score,
-    list_issues,
-    get_suggestions,
-    column_summary,
-)
 
-from .models import (
-    DiagnosisReport,
-    Issue,
-    ColumnReport
-)
