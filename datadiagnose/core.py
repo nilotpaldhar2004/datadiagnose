@@ -19,9 +19,9 @@ Author  : Nilotpal Dhar
 License : MIT
 """
 
-from .models    import DiagnosisReport, ColumnReport, Issue
+from .models    import DiagnosisReport, ColumnReport
 from .utils     import (
-    is_missing, to_numeric_list, is_categorical, non_null_values,
+    to_numeric_list, is_categorical, non_null_values,
     mean, median, std,
 )
 from .detectors import (

@@ -25,7 +25,7 @@ License : MIT
 
 from .models import Issue
 from .utils  import (
-    is_missing, to_numeric_list, is_categorical, non_null_values,
+    is_missing, to_numeric_list, non_null_values,
     mean, median, std, skewness, iqr_bounds, zscore_outliers,
     pearson_correlation, matches_any_keyword,
     LEAKY_KEYWORDS, DATETIME_KEYWORDS, TEXT_KEYWORDS, GEO_KEYWORDS,
@@ -310,12 +310,12 @@ def detect_class_imbalance(data, col_name, col_report, diagnosis,
                f"or use class_weight='balanced'. Evaluate using F1-Score or PRC, NOT accuracy.")
     elif ratio >= 5:
         severity = 'high'
-        fix = (f"Significant imbalance. Use StratifiedKFold cross-validation and "
-               f"consider RandomOverSampler or BalancedRandomForestClassifier.")
+        fix = ("Significant imbalance. Use StratifiedKFold cross-validation and "
+                "consider RandomOverSampler or BalancedRandomForestClassifier.")
     elif ratio >= 3:
         severity = 'medium'
-        fix = (f"Moderate imbalance. Ensure your train-test split is stratified: "
-               f"train_test_split(..., stratify=y).")
+        fix = ("Moderate imbalance. Ensure your train-test split is stratified: "
+               "train_test_split(..., stratify=y).")
     else:
         # Ratio < 3:1 is generally considered acceptable for most ML models
         return

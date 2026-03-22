@@ -15,8 +15,6 @@ License : MIT
 """
 
 import math
-from collections import Counter
-
 
 # ──────────────────────────────────────────────────────────────
 # TYPE DETECTION
