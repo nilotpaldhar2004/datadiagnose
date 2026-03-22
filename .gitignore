@@ -1,0 +1,262 @@
+# ============================================================
+# .gitignore — DataDiagnose
+# Files and folders Git should never track.
+#
+# Rule of thumb: if a file is GENERATED (not written by hand),
+# it should be in here. Generated files change every time you
+# run a command and create noisy, meaningless diffs in Git.
+#
+# Author  : Nilotpal Dhar
+# License : MIT
+# ============================================================
+
+
+# ────────────────────────────────────────────────────────────
+# PYTHON BYTECODE & CACHE
+# Python compiles .py files into .pyc bytecode files and
+# stores them in __pycache__/ folders for faster startup.
+# These are machine-generated and machine-specific — they
+# should never be committed.
+# ────────────────────────────────────────────────────────────
+
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+*.pyo
+*.pyd
+
+
+# ────────────────────────────────────────────────────────────
+# DISTRIBUTION & PACKAGING
+# When you run "python -m build" to package DataDiagnose
+# for PyPI, it creates these folders. They contain compiled
+# distribution files, not source code.
+# ────────────────────────────────────────────────────────────
+
+dist/
+build/
+*.egg-info/
+*.egg
+MANIFEST
+.eggs/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+
+
+# ────────────────────────────────────────────────────────────
+# VIRTUAL ENVIRONMENTS
+# A virtual environment is a local copy of Python with your
+# project's dependencies installed. It is always local to
+# your machine and should never be in version control.
+# Common names people give their virtual environments:
+# ────────────────────────────────────────────────────────────
+
+venv/
+.venv/
+env/
+.env/
+ENV/
+env.bak/
+venv.bak/
+virtualenv/
+.virtualenv/
+
+
+# ────────────────────────────────────────────────────────────
+# ENVIRONMENT VARIABLES & SECRETS
+# .env files often contain API keys, passwords, or database
+# connection strings. NEVER commit these to Git.
+# If you need to share config, use .env.example instead.
+# ────────────────────────────────────────────────────────────
+
+.env
+.env.local
+.env.development
+.env.test
+.env.production
+*.secret
+secrets.py
+
+
+# ────────────────────────────────────────────────────────────
+# TESTING & COVERAGE
+# pytest and coverage tools generate reports and caches.
+# ────────────────────────────────────────────────────────────
+
+.pytest_cache/
+.tox/
+.cache/
+htmlcov/
+.coverage
+.coverage.*
+coverage.xml
+*.cover
+nosetests.xml
+test-results/
+test_output/
+
+
+# ────────────────────────────────────────────────────────────
+# TYPE CHECKERS
+# mypy and pyright create cache folders when they analyse
+# your code.
+# ────────────────────────────────────────────────────────────
+
+.mypy_cache/
+.dmypy.json
+dmypy.json
+.pytype/
+.pyre/
+
+
+# ────────────────────────────────────────────────────────────
+# JUPYTER NOTEBOOKS
+# If you ever use Jupyter for experimentation, its checkpoints
+# folder gets created automatically and should not be tracked.
+# ────────────────────────────────────────────────────────────
+
+.ipynb_checkpoints/
+*.ipynb_checkpoints
+
+
+# ────────────────────────────────────────────────────────────
+# IDE & EDITOR SETTINGS
+# Your editor creates hidden settings folders. Other people
+# use different editors, so your settings are irrelevant to
+# them and should not be in the repository.
+# ────────────────────────────────────────────────────────────
+
+# VS Code
+.vscode/
+*.code-workspace
+
+# PyCharm / JetBrains IDEs
+.idea/
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-project
+*.sublime-workspace
+
+# Vim
+*.swp
+*.swo
+*~
+.vim/
+
+# Emacs
+*#
+.#*
+\#*#
+
+
+# ────────────────────────────────────────────────────────────
+# OPERATING SYSTEM FILES
+# macOS, Windows, and Linux each create hidden system files
+# that mean nothing to other operating systems.
+# ────────────────────────────────────────────────────────────
+
+# macOS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+.AppleDouble
+.LSOverride
+Icon
+
+# Windows
+Thumbs.db
+Thumbs.db:encryptable
+ehthumbs.db
+ehthumbs_vista.db
+Desktop.ini
+$RECYCLE.BIN/
+*.lnk
+
+# Linux
+*~
+.fuse_hidden*
+.directory
+.Trash-*
+.nfs*
+
+
+# ────────────────────────────────────────────────────────────
+# LOGS
+# Application logs can grow huge and change on every run.
+# ────────────────────────────────────────────────────────────
+
+*.log
+*.log.*
+logs/
+log/
+pip-log.txt
+pip-delete-this-directory.txt
+
+
+# ────────────────────────────────────────────────────────────
+# DATA FILES
+# Large data files do not belong in Git — use Git LFS or
+# cloud storage for datasets.
+# ────────────────────────────────────────────────────────────
+
+*.csv
+*.tsv
+*.json
+*.jsonl
+*.parquet
+*.feather
+*.h5
+*.hdf5
+*.pkl
+*.pickle
+*.db
+*.sqlite
+*.sqlite3
+
+
+# ────────────────────────────────────────────────────────────
+# DOCUMENTATION BUILD
+# Sphinx and MkDocs generate HTML documentation. The source
+# (.rst or .md files) are tracked, but the built output is not.
+# ────────────────────────────────────────────────────────────
+
+docs/_build/
+docs/_autosummary/
+site/
+.pdoc/
+
+
+# ────────────────────────────────────────────────────────────
+# TEMPORARY FILES
+# ────────────────────────────────────────────────────────────
+
+tmp/
+temp/
+*.tmp
+*.temp
+*.bak
+*.orig
+*.backup
+
+
+# ────────────────────────────────────────────────────────────
+# PROFILING
+# Python profilers dump their output to files.
+# ────────────────────────────────────────────────────────────
+
+*.prof
+*.lprof
+
+
+# ────────────────────────────────────────────────────────────
+# ROPE (Python refactoring library)
+# ────────────────────────────────────────────────────────────
+
+.ropeproject/
