@@ -202,6 +202,7 @@ df_stats = dd.get_stats_df(my_dataset, target_col="target")
 
 ---
 
+
 ### `report.to_df()` — *new in v1.0.2*
 
 Method directly on the `DiagnosisReport` object. Does the same thing as `get_stats_df()` but you call it after you already have a report.
