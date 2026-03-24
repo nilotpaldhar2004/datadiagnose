@@ -111,6 +111,9 @@ def detect_outliers(data, col_name, col_report, diagnosis, is_target=False):
 
     # ── Step A: Calculate Statistics ────────────────────────
     lower, upper, q1, q3, iqr = iqr_bounds(nums)
+    if iqr == 0:
+        # If there is no spread, IQR-based outlier detection is not applicable
+        return
     iqr_out = [x for x in nums if x < lower or x > upper]
     iqr_pct = round(len(iqr_out) / len(nums) * 100, 2)
 
@@ -134,13 +137,12 @@ def detect_outliers(data, col_name, col_report, diagnosis, is_target=False):
     if iqr_pct >= 15:
         severity = 'high'
         if is_target:
-            # Target advice: Don't clip! Use robust modeling.
-            fix = (f"Target '{col_name}' has extreme outliers. Instead of clipping, use a "
-                   f"Log-Transform or a robust loss function like Huber or MAE.")
+            # Focus on model-level robustness for targets, not data-level clipping
+            fix = (f"Target '{col_name}' has extreme outliers. Avoid clipping target labels; "
+                   f"instead, use robust estimators like HuberRegressor or RANSACClassifier.")
         else:
-            # Feature advice: Normalize or clip.
-            fix = (f"Apply RobustScaler or np.log1p() to '{col_name}'. "
-                   f"Or cap with: df['{col_name}'].clip(lower={lower:.1f}, upper={upper:.1f})")
+            fix = (f"Apply RobustScaler to '{col_name}' or cap values with: "
+                   f"df['{col_name}'].clip(lower={lower:.1f}, upper={upper:.1f})")
 
     # MEDIUM SEVERITY (5% - 15% outliers)
     elif iqr_pct >= 5:
@@ -266,7 +268,7 @@ def detect_class_imbalance(data, col_name, col_report, diagnosis,
     if not nn:
         return
 
-    # ── Step A: Regression Guard ────────────────────────────
+    # ── Step A: Guard 1 — Regression target ─────────────────
     # If this is the target and it's numeric with many unique values,
     # it is a REGRESSION task. Class imbalance does not apply.
     nums = to_numeric_list(nn)
@@ -274,6 +276,35 @@ def detect_class_imbalance(data, col_name, col_report, diagnosis,
 
     if is_target and nums is not None and len(unique_vals) > 20:
         return
+
+    # ── Step A: Guard 2 — Numeric FEATURE columns ───────────
+    # This is the critical fix for real-world datasets.
+    #
+    # Columns like bedrooms=[1,2,3,4], stories=[1,2,3,4], parking=[0,1,2,3]
+    # are discrete numeric features — NOT class labels. Flagging them as
+    # "imbalanced" is a FALSE POSITIVE that confuses users and tanks the score.
+    #
+    # A column is a genuine categorical label (worth checking) only when:
+    #   - It contains text values (not numbers), OR
+    #   - It is the target column (explicitly passed as is_target=True), OR
+    #   - It is a binary numeric column (0/1) — which IS a real class label
+    #
+    # So: if the column is numeric AND not the target AND has more than
+    # 2 unique values → it is a discrete feature, skip imbalance check.
+    if nums is not None and not is_target and len(unique_vals) > 2:
+        # Store the stats for the report without raising an issue
+        counts = Counter(str(v) for v in nn)
+        n_class = len(counts)
+        most_common_n  = counts.most_common(1)[0][1]
+        least_common_n = counts.most_common()[-1][1]
+        ratio = round(most_common_n / max(least_common_n, 1), 2)
+        majority_pct = round(most_common_n / len(nn) * 100, 1)
+        minority_pct = round(least_common_n / len(nn) * 100, 1)
+        col_report.add('n_classes',       n_class)
+        col_report.add('majority_pct',    f'{majority_pct:.1f}%')
+        col_report.add('minority_pct',    f'{minority_pct:.1f}%')
+        col_report.add('imbalance_ratio', f'{ratio:.1f}:1')
+        return   # record stats but do NOT raise an issue
 
     # ── Step B: Identify Classes ────────────────────────────
     counts = Counter(str(v) for v in nn)

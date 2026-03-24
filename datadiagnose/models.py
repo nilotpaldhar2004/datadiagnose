@@ -138,9 +138,57 @@ class DiagnosisReport:
         """
         Record a detected issue and deduct its severity points
         from the health score.
+
+        Scoring design (v1.0.2 fix):
+        ─────────────────────────────
+        The original flat deduction let the score hit 0 too easily
+        on real datasets with many columns (e.g. an IPL dataset with
+        26 columns generates dozens of skewness + imbalance issues,
+        each deducting 8-25 points, instantly summing to 0).
+
+        New proportional design:
+          - CRITICAL issues: full 25 pts each, capped at 4 issues (100 pts max)
+          - HIGH issues    : full 15 pts each, capped at 4 issues  (60 pts max)
+          - MEDIUM / LOW   : first 5 count fully, each extra counts 2 pts only
+            (these pile up on wide datasets — cap prevents unfair punishment)
+
+        This means:
+          - 4 CRITICAL issues  → score = 0   (genuinely broken data)
+          - 1 CRITICAL issue   → score = 75  (one serious problem)
+          - 10 MEDIUM issues   → score = 50  (needs work but not catastrophic)
+          - 40 MEDIUM issues   → score = 30  (very messy but still meaningful)
         """
         self.issues.append(issue)
-        self.score = max(0, self.score - issue.severity_points)
+
+        # Recompute score from scratch on every add
+        # (simpler than tracking deltas and avoids drift bugs)
+        n_critical = sum(1 for i in self.issues if i.severity == 'critical')
+        n_high     = sum(1 for i in self.issues if i.severity == 'high')
+        medium_low = sorted(
+            [i for i in self.issues if i.severity in ('medium', 'low')],
+            key=lambda x: x.severity_points,
+            reverse=True
+        )
+        n_ml       = len(medium_low)
+
+        # Critical: full weight, max 4 before score hits 0 regardless
+        critical_penalty = min(n_critical, 4) * 25
+
+        # High: full weight, max 4
+        high_penalty = min(n_high, 4) * 15
+
+        # Medium/Low: first 5 count fully, extras count 2 pts each
+        # This prevents 20 skewness warnings from single-handedly killing the score
+        if n_ml <= 5:
+            ml_penalty = sum(i.severity_points for i in medium_low)
+        else:
+            ml_penalty = (
+                sum(i.severity_points for i in medium_low[:5])
+                + (n_ml - 5) * 2
+            )
+
+        total_penalty = critical_penalty + high_penalty + ml_penalty
+        self.score    = max(0, 100 - total_penalty)
 
     def add_suggestion(self, text: str):
         """

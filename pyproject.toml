@@ -1,5 +1,5 @@
 # ==============================================================
-# DataDiagnose — Package Configuration (v1.0.1)
+# DataDiagnose — Package Configuration (v1.0.3)
 # ==============================================================
 
 [build-system]
@@ -9,7 +9,7 @@ build-backend = "setuptools.build_meta"
 # ── Project metadata ─────────────────────────────────────────
 [project]
 name = "datadiagnose"
-version = "1.0.2"
+version = "1.0.3"
 description = "Dataset Auto-Diagnosis Python Library — find and fix data problems before model training."
 readme = "README.md"
 requires-python = ">=3.7"

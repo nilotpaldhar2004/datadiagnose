@@ -4,7 +4,7 @@
 
 [![Tests](https://github.com/nilotpaldhar2004/datadiagnose/actions/workflows/tests.yml/badge.svg)](https://github.com/nilotpaldhar2004/datadiagnose/actions)
 [![Python](https://img.shields.io/badge/python-3.7%2B-blue.svg)](https://www.python.org)
-[![Version](https://img.shields.io/badge/version-1.0.2-orange.svg)](https://github.com/nilotpaldhar2004/datadiagnose)
+[![Version](https://img.shields.io/badge/version-1.0.3-orange.svg)](https://github.com/nilotpaldhar2004/datadiagnose)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/nilotpaldhar2004/datadiagnose/blob/main/LICENSE)
 [![Dependencies](https://img.shields.io/badge/dependencies-none-brightgreen.svg)](https://github.com/nilotpaldhar2004/datadiagnose/blob/main/pyproject.toml)
 
@@ -29,7 +29,7 @@ Give DataDiagnose any dataset and it returns:
 - A specific **fix suggestion** for every problem
 - **Model recommendations** based on your data characteristics
 - **Feature engineering hints** based on your column names
-- A **Pandas DataFrame** of all column statistics with one call *(new in v1.0.2)*
+- A **Pandas DataFrame** of all column statistics with one call *(new in v1.0.3)*
 
 Eight problems are detected automatically:
 
@@ -46,7 +46,7 @@ Eight problems are detected automatically:
 
 ---
 
-## What Is New in v1.0.2
+## What Is New in v1.0.3
 
 ### 1. Pass a pandas DataFrame directly
 
@@ -159,7 +159,7 @@ report = dd.diagnose(df, target_col="Survived")
 # Way 2 — Convert manually (original method, still works)
 report = dd.diagnose(df.to_dict(orient="list"), target_col="Survived")
 
-# Way 3 — Get all stats as a DataFrame instantly (new in v1.0.1)
+# Way 3 — Get all stats as a DataFrame instantly (new in v1.0.3)
 df_stats = dd.get_stats_df(df, target_col="Survived")
 print(df_stats)
 ```
@@ -172,7 +172,7 @@ print(df_stats)
 
 The main function. Runs all eight detectors and returns a `DiagnosisReport`.
 
-**New in v1.0.1:** accepts pandas DataFrames directly without conversion.
+**New in v1.0.3:** accepts pandas DataFrames directly without conversion.
 
 ```python
 report = diagnose(dataset, target_col="label", dataset_name="Titanic")
@@ -188,7 +188,7 @@ report.n_cols         # int
 
 ---
 
-### `get_stats_df(dataset, target_col=None)` — *new in v1.0.2*
+### `get_stats_df(dataset, target_col=None)` — *new in v1.0.3*
 
 Runs a full diagnosis and returns all column statistics as a transposed Pandas DataFrame. Metrics are rows, your dataset columns are the headers.
 
@@ -202,7 +202,7 @@ df_stats = dd.get_stats_df(my_dataset, target_col="target")
 
 ---
 
-### `report.to_df()` — *new in v1.0.2*
+### `report.to_df()` — *new in v1.0.3*
 
 Method directly on the `DiagnosisReport` object. Does the same thing as `get_stats_df()` but you call it after you already have a report.
 
@@ -416,7 +416,7 @@ To contribute:
 
 ## Changelog
 
-### v1.0.2
+### v1.0.3
 - **New:** `diagnose()` now accepts pandas DataFrames directly — no `.to_dict()` needed
 - **New:** `get_stats_df(dataset, target_col)` — returns full column statistics as a Pandas DataFrame
 - **New:** `report.to_df()` — method on DiagnosisReport to get stats table as DataFrame

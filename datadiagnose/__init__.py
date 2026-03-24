@@ -37,7 +37,7 @@ Public API
 
 
 Author  : Nilotpal Dhar
-Version : 1.0.1
+Version : 1.0.3
 License : MIT
 GitHub  : https://github.com/nilotpaldhar2004/datadiagnose
 """
@@ -61,7 +61,7 @@ from .models import (
 )
 
 # ── Version info ──────────────────────────────────────────────
-__version__ = '1.0.1'
+__version__ = '1.0.3'
 __author__  = 'Nilotpal Dhar'
 __license__ = 'MIT'
 
