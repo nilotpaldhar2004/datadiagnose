@@ -19,8 +19,8 @@ Author  : Nilotpal Dhar
 License : MIT
 """
 
-from .models    import DiagnosisReport, ColumnReport
-from .utils     import (
+from .models import DiagnosisReport, ColumnReport
+from .utils import (
     to_numeric_list, is_categorical, non_null_values,
     mean, median, std,
 )
@@ -71,7 +71,7 @@ def _normalise_input(dataset):
                 "Use df.to_dict(orient='records') to convert a pandas DataFrame."
             )
         col_names = list(dataset[0].keys())
-        result    = {col: [row.get(col) for row in dataset] for col in col_names}
+        result = {col: [row.get(col) for row in dataset] for col in col_names}
         return result
 
     elif isinstance(dataset, dict):
@@ -166,16 +166,16 @@ def diagnose(dataset, target_col=None, dataset_name='dataset'):
     """
 
     # ── Step 1: Normalise input ──────────────────────────────
-    dataset   = _normalise_input(dataset)
+    dataset = _normalise_input(dataset)
     col_names = _validate(dataset)
 
     n_rows = len(dataset[col_names[0]])
     n_cols = len(col_names)
 
     # ── Initialise report ────────────────────────────────────
-    report          = DiagnosisReport(dataset_name)
-    report.n_rows   = n_rows
-    report.n_cols   = n_cols
+    report = DiagnosisReport(dataset_name)
+    report.n_rows = n_rows
+    report.n_cols = n_cols
 
     # ── Step 2: Dataset-level checks ────────────────────────
     # These look at the whole dataset, not individual columns.
@@ -189,11 +189,11 @@ def diagnose(dataset, target_col=None, dataset_name='dataset'):
 
     # ── Step 3: Per-column analysis ──────────────────────────
     for col in col_names:
-        data       = dataset[col]
+        data = dataset[col]
         col_report = ColumnReport(col)
 
         # ── Determine column type ────────────────────────────
-        nums   = to_numeric_list(data)
+        nums = to_numeric_list(data)
         is_cat = is_categorical(data)
 
         if nums is not None:
@@ -205,7 +205,7 @@ def diagnose(dataset, target_col=None, dataset_name='dataset'):
             col_report.add('min',    f'{min(nums):.4f}')
             col_report.add('max',    f'{max(nums):.4f}')
         elif is_cat:
-            nn     = non_null_values(data)
+            nn = non_null_values(data)
             unique = set(str(v) for v in nn)
             col_report.add('type',          'categorical')
             col_report.add('unique_values', len(unique))
@@ -266,7 +266,8 @@ def quick_scan(dataset, target_col=None, dataset_name='dataset'):
     -------
     >>> quick_scan(my_dataset, target_col='survived')
     """
-    report = diagnose(dataset, target_col=target_col, dataset_name=dataset_name)
+    report = diagnose(dataset, target_col=target_col,
+                      dataset_name=dataset_name)
     print(report.summary())
     return report
 

@@ -62,7 +62,7 @@ from .models import (
 
 # ── Version info ──────────────────────────────────────────────
 __version__ = '1.0.4'
-__author__  = 'Nilotpal Dhar'
+__author__ = 'Nilotpal Dhar'
 __license__ = 'MIT'
 
 # ── Public API ────────────────────────────────────────────────

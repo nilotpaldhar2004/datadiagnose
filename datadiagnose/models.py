@@ -53,12 +53,12 @@ class Issue:
                 f"Invalid severity '{severity}'. "
                 f"Choose from: {list(self.SEVERITY_POINTS.keys())}"
             )
-        self.title           = title
-        self.description     = description
-        self.severity        = severity
+        self.title = title
+        self.description = description
+        self.severity = severity
         self.severity_points = self.SEVERITY_POINTS[severity]
-        self.column          = column
-        self.fix             = fix
+        self.column = column
+        self.fix = fix
 
     def badge(self):
         """Return the coloured severity badge string."""
@@ -87,7 +87,7 @@ class ColumnReport:
     """
 
     def __init__(self, name):
-        self.name    = name
+        self.name = name
         self.details = {}
 
     def add(self, key, value):
@@ -123,13 +123,13 @@ class DiagnosisReport:
     """
 
     def __init__(self, dataset_name='dataset'):
-        self.dataset_name   = dataset_name
-        self.n_rows         = 0
-        self.n_cols         = 0
-        self.score          = 100
-        self.issues         = []
-        self.suggestions    = []
-        self.model_types    = []
+        self.dataset_name = dataset_name
+        self.n_rows = 0
+        self.n_cols = 0
+        self.score = 100
+        self.issues = []
+        self.suggestions = []
+        self.model_types = []
         self.column_reports = {}
 
     # ── Mutators ────────────────────────────────────────────
@@ -163,13 +163,13 @@ class DiagnosisReport:
         # Recompute score from scratch on every add
         # (simpler than tracking deltas and avoids drift bugs)
         n_critical = sum(1 for i in self.issues if i.severity == 'critical')
-        n_high     = sum(1 for i in self.issues if i.severity == 'high')
+        n_high = sum(1 for i in self.issues if i.severity == 'high')
         medium_low = sorted(
             [i for i in self.issues if i.severity in ('medium', 'low')],
             key=lambda x: x.severity_points,
             reverse=True
         )
-        n_ml       = len(medium_low)
+        n_ml = len(medium_low)
 
         # Critical: full weight, max 4 before score hits 0 regardless
         critical_penalty = min(n_critical, 4) * 25
@@ -188,7 +188,7 @@ class DiagnosisReport:
             )
 
         total_penalty = critical_penalty + high_penalty + ml_penalty
-        self.score    = max(0, 100 - total_penalty)
+        self.score = max(0, 100 - total_penalty)
 
     def add_suggestion(self, text: str):
         """

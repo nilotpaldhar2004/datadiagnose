@@ -85,7 +85,7 @@ def is_categorical(values, max_unique=50, unique_ratio_threshold=0.05):
     if not non_null:
         return False
     unique = set(str(v) for v in non_null)
-    ratio  = len(unique) / len(non_null)
+    ratio = len(unique) / len(non_null)
     return len(unique) <= max_unique or ratio <= unique_ratio_threshold
 
 
@@ -127,8 +127,8 @@ def median(nums):
     """
     if not nums:
         return 0.0
-    s   = sorted(nums)
-    n   = len(s)
+    s = sorted(nums)
+    n = len(s)
     mid = n // 2
     if n % 2 == 1:
         return s[mid]
@@ -148,7 +148,7 @@ def std(nums):
     """
     if len(nums) < 2:
         return 0.0
-    m   = mean(nums)
+    m = mean(nums)
     var = sum((x - m) ** 2 for x in nums) / (len(nums) - 1)
     return math.sqrt(var)
 
@@ -199,8 +199,8 @@ def percentile(nums, p):
     """
     if not nums:
         return 0.0
-    s   = sorted(nums)
-    n   = len(s)
+    s = sorted(nums)
+    n = len(s)
     idx = max(0, min(n - 1, int(math.ceil(p / 100.0 * n)) - 1))
     return s[idx]
 
@@ -224,8 +224,8 @@ def iqr_bounds(nums):
     -------
     (lower_fence, upper_fence, q1, q3, iqr_value)
     """
-    q1  = percentile(nums, 25)
-    q3  = percentile(nums, 75)
+    q1 = percentile(nums, 25)
+    q3 = percentile(nums, 75)
     iqr = q3 - q1
     return (
         q1 - 1.5 * iqr,   # lower fence
@@ -292,8 +292,8 @@ def pearson_correlation(x, y):
     my = sum(p[1] for p in pairs) / n
 
     numerator = sum((p[0] - mx) * (p[1] - my) for p in pairs)
-    denom_x   = math.sqrt(sum((p[0] - mx) ** 2 for p in pairs))
-    denom_y   = math.sqrt(sum((p[1] - my) ** 2 for p in pairs))
+    denom_x = math.sqrt(sum((p[0] - mx) ** 2 for p in pairs))
+    denom_y = math.sqrt(sum((p[1] - my) ** 2 for p in pairs))
 
     if denom_x == 0 or denom_y == 0:
         return None   # one variable is constant — correlation undefined
@@ -352,5 +352,5 @@ def matches_any_keyword(col_name, keyword_set):
     as a substring (catches things like 'timestamp' inside 'event_timestamp').
     """
     col_lower = col_name.lower()
-    words     = column_keywords(col_name)
+    words = column_keywords(col_name)
     return bool(words & keyword_set) or any(kw in col_lower for kw in keyword_set)

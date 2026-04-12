@@ -24,7 +24,7 @@ License : MIT
 """
 
 from .models import Issue
-from .utils  import (
+from .utils import (
     is_missing, to_numeric_list, non_null_values,
     skewness, iqr_bounds, zscore_outliers,
     pearson_correlation, matches_any_keyword,
@@ -47,9 +47,9 @@ def detect_missing_values(data, col_name, col_report, diagnosis):
         ≥ 10%  → MEDIUM    (median/mode imputation appropriate)
         > 0%   → LOW       (simple fill is fine)
     """
-    total   = len(data)
+    total = len(data)
     missing = sum(1 for v in data if is_missing(v))
-    pct     = round(missing / total * 100, 2) if total else 0.0
+    pct = round(missing / total * 100, 2) if total else 0.0
 
     col_report.add('missing_count', missing)
     col_report.add('missing_pct',   f'{pct:.1f}%')
@@ -59,29 +59,29 @@ def detect_missing_values(data, col_name, col_report, diagnosis):
 
     if pct >= 60:
         severity = 'critical'
-        desc     = f'{pct:.1f}% of values are missing — column is mostly empty.'
-        fix      = f"Drop column '{col_name}': df.drop(columns=['{col_name}'])"
+        desc = f'{pct:.1f}% of values are missing — column is mostly empty.'
+        fix = f"Drop column '{col_name}': df.drop(columns=['{col_name}'])"
     elif pct >= 30:
         severity = 'high'
-        desc     = f'{pct:.1f}% of values are missing — significant gap.'
-        fix      = (f"Use IterativeImputer or KNNImputer from sklearn "
-                    f"for column '{col_name}'.")
+        desc = f'{pct:.1f}% of values are missing — significant gap.'
+        fix = (f"Use IterativeImputer or KNNImputer from sklearn "
+               f"for column '{col_name}'.")
     elif pct >= 10:
         severity = 'medium'
-        desc     = f'{pct:.1f}% of values are missing.'
-        fix      = (f"Fill '{col_name}' with median (numeric) "
-                    f"or mode (categorical).")
+        desc = f'{pct:.1f}% of values are missing.'
+        fix = (f"Fill '{col_name}' with median (numeric) "
+               f"or mode (categorical).")
     else:
         severity = 'low'
-        desc     = f'{pct:.1f}% of values are missing — small gap, easy to fix.'
-        fix      = f"df['{col_name}'].fillna(df['{col_name}'].median())"
+        desc = f'{pct:.1f}% of values are missing — small gap, easy to fix.'
+        fix = f"df['{col_name}'].fillna(df['{col_name}'].median())"
 
     diagnosis.add_issue(Issue(
-        title       = f"Missing Values in '{col_name}'",
-        description = desc,
-        severity    = severity,
-        column      = col_name,
-        fix         = fix,
+        title=f"Missing Values in '{col_name}'",
+        description=desc,
+        severity=severity,
+        column=col_name,
+        fix=fix,
     ))
     diagnosis.add_suggestion(fix)
 
@@ -295,7 +295,7 @@ def detect_class_imbalance(data, col_name, col_report, diagnosis,
         # Store the stats for the report without raising an issue
         counts = Counter(str(v) for v in nn)
         n_class = len(counts)
-        most_common_n  = counts.most_common(1)[0][1]
+        most_common_n = counts.most_common(1)[0][1]
         least_common_n = counts.most_common()[-1][1]
         ratio = round(most_common_n / max(least_common_n, 1), 2)
         majority_pct = round(most_common_n / len(nn) * 100, 1)
@@ -339,7 +339,7 @@ def detect_class_imbalance(data, col_name, col_report, diagnosis,
     elif ratio >= 5:
         severity = 'high'
         fix = ("Significant imbalance. Use StratifiedKFold cross-validation and "
-                "consider RandomOverSampler or BalancedRandomForestClassifier.")
+               "consider RandomOverSampler or BalancedRandomForestClassifier.")
     elif ratio >= 3:
         severity = 'medium'
         fix = ("Moderate imbalance. Ensure your train-test split is stratified: "
@@ -476,22 +476,22 @@ def detect_duplicate_rows(dataset, col_names, diagnosis):
         for i in range(n_rows)
     ]
 
-    n_unique    = len(set(row_tuples))
+    n_unique = len(set(row_tuples))
     n_duplicate = n_rows - n_unique
 
     if n_duplicate == 0:
         return
 
-    dup_pct  = round(n_duplicate / n_rows * 100, 2)
+    dup_pct = round(n_duplicate / n_rows * 100, 2)
     severity = 'high' if dup_pct > 5 else 'medium' if dup_pct > 1 else 'low'
-    fix      = f"df.drop_duplicates(inplace=True)  # removes {n_duplicate} duplicate rows"
+    fix = f"df.drop_duplicates(inplace=True)  # removes {n_duplicate} duplicate rows"
 
     diagnosis.add_issue(Issue(
-        title       = 'Duplicate Rows Detected',
-        description = (f"{n_duplicate} duplicate rows found "
-                       f"({dup_pct:.1f}% of {n_rows} total rows)."),
-        severity    = severity,
-        fix         = fix,
+        title='Duplicate Rows Detected',
+        description=(f"{n_duplicate} duplicate rows found "
+                     f"({dup_pct:.1f}% of {n_rows} total rows)."),
+        severity=severity,
+        fix=fix,
     ))
     diagnosis.add_suggestion(fix)
 
@@ -529,19 +529,19 @@ def detect_constant_columns(dataset, col_names, diagnosis):
             constant_val = nn[0]
             fix = f"df.drop(columns=['{col}'], inplace=True)  # constant = {constant_val}"
             diagnosis.add_issue(Issue(
-                title       = f"Constant Column: '{col}'",
-                description = (f"Every non-null value in '{col}' is '{constant_val}'. "
-                               f"Zero variance — zero information for the model."),
-                severity    = 'medium',
-                column      = col,
-                fix         = fix,
+                title=f"Constant Column: '{col}'",
+                description=(f"Every non-null value in '{col}' is '{constant_val}'. "
+                             f"Zero variance — zero information for the model."),
+                severity='medium',
+                column=col,
+                fix=fix,
             ))
             diagnosis.add_suggestion(fix)
 
 
 # 8. HIGH CARDINALITY DETECTOR
 def detect_high_cardinality(dataset, col_names, diagnosis,
-                             unique_ratio_threshold=0.9):
+                            unique_ratio_threshold=0.9):
     """
     Detect text columns where almost every value is unique.
 
@@ -577,24 +577,24 @@ def detect_high_cardinality(dataset, col_names, diagnosis,
         if nums is not None:
             continue   # numeric column — skip
 
-        nn      = non_null_values(data)
+        nn = non_null_values(data)
         if len(nn) < 10:
             continue   # too few values to judge
 
-        unique        = set(str(v) for v in nn)
-        unique_ratio  = len(unique) / len(nn)
+        unique = set(str(v) for v in nn)
+        unique_ratio = len(unique) / len(nn)
 
         if unique_ratio >= unique_ratio_threshold:
             fix = (f"Drop '{col}' if it is an ID column, or apply "
                    f"TargetEncoder / frequency encoding instead of one-hot encoding.")
             diagnosis.add_issue(Issue(
-                title       = f"High Cardinality Column: '{col}'",
-                description = (f"'{col}' has {len(unique)} unique values out of "
-                               f"{len(nn)} non-null rows ({unique_ratio*100:.1f}% unique). "
-                               f"Likely an ID or free-text column."),
-                severity    = 'medium',
-                column      = col,
-                fix         = fix,
+                title=f"High Cardinality Column: '{col}'",
+                description=(f"'{col}' has {len(unique)} unique values out of "
+                             f"{len(nn)} non-null rows ({unique_ratio*100:.1f}% unique). "
+                             f"Likely an ID or free-text column."),
+                severity='medium',
+                column=col,
+                fix=fix,
             ))
             diagnosis.add_suggestion(fix)
 
@@ -659,7 +659,8 @@ def suggest_models(dataset, col_names, target_col, diagnosis):
             'DBSCAN — density-based clustering for noisy data',
             'PCA — dimensionality reduction / visualization'
         ]
-        diagnosis.add_suggestion("No target specified: running in unsupervised mode.")
+        diagnosis.add_suggestion(
+            "No target specified: running in unsupervised mode.")
         return
 
     # ── Step B: Determine Task Type (Classification vs Regression) ──
@@ -725,4 +726,5 @@ def suggest_models(dataset, col_names, target_col, diagnosis):
     # 3. Imbalance check helper (if target is binary)
     if task == 'binary_classification' and n_rows > 0:
         # Check if the suggest_models should trigger an evaluation metric warning
-        diagnosis.add_suggestion("For classification: evaluate using ROC-AUC or F1-Score instead of Accuracy.")
+        diagnosis.add_suggestion(
+            "For classification: evaluate using ROC-AUC or F1-Score instead of Accuracy.")
