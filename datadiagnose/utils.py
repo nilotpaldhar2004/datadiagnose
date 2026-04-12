@@ -1,4 +1,5 @@
 """
+
 utils.py
 ========
 Pure math and type-detection helper functions.
@@ -12,6 +13,7 @@ math, statistics, and collections modules.
 
 Author  : Nilotpal Dhar
 License : MIT
+
 """
 
 import math
