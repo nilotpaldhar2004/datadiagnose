@@ -21,8 +21,12 @@ License : MIT
 
 from .models import DiagnosisReport, ColumnReport
 from .utils import (
-    to_numeric_list, is_categorical, non_null_values,
-    mean, median, std,
+    to_numeric_list,
+    is_categorical,
+    non_null_values,
+    mean,
+    median,
+    std,
 )
 from .detectors import (
     detect_missing_values,
@@ -37,16 +41,16 @@ from .detectors import (
     suggest_models,
 )
 
-
 # ──────────────────────────────────────────────────────────────
 # INPUT NORMALISATION
 # ──────────────────────────────────────────────────────────────
 
+
 def _normalise_input(dataset):
     # Detect if input is a Pandas DataFrame or similar object
-    if hasattr(dataset, 'to_dict') and callable(getattr(dataset, 'to_dict')):
+    if hasattr(dataset, "to_dict") and callable(getattr(dataset, "to_dict")):
         # We use orient='list' because it matches your preferred dict-of-lists format
-        dataset = dataset.to_dict(orient='list')
+        dataset = dataset.to_dict(orient="list")
     # ---------------------------
     """
     Accept two input formats and return a dict-of-lists.
@@ -104,8 +108,7 @@ def _validate(dataset):
     if len(set(lengths.values())) > 1:
         bad = {c: l for c, l in lengths.items()}
         raise ValueError(
-            f"All columns must have the same number of rows. "
-            f"Column lengths: {bad}"
+            f"All columns must have the same number of rows. " f"Column lengths: {bad}"
         )
 
     if lengths[col_names[0]] == 0:
@@ -118,7 +121,8 @@ def _validate(dataset):
 # MAIN DIAGNOSIS ENGINE
 # ──────────────────────────────────────────────────────────────
 
-def diagnose(dataset, target_col=None, dataset_name='dataset'):
+
+def diagnose(dataset, target_col=None, dataset_name="dataset"):
     """
     Run a full diagnosis on any dataset and return a DiagnosisReport.
 
@@ -198,20 +202,20 @@ def diagnose(dataset, target_col=None, dataset_name='dataset'):
 
         if nums is not None:
             # Numeric column — compute descriptive statistics
-            col_report.add('type',   'numeric')
-            col_report.add('mean',   f'{mean(nums):.4f}')
-            col_report.add('median', f'{median(nums):.4f}')
-            col_report.add('std',    f'{std(nums):.4f}')
-            col_report.add('min',    f'{min(nums):.4f}')
-            col_report.add('max',    f'{max(nums):.4f}')
+            col_report.add("type", "numeric")
+            col_report.add("mean", f"{mean(nums):.4f}")
+            col_report.add("median", f"{median(nums):.4f}")
+            col_report.add("std", f"{std(nums):.4f}")
+            col_report.add("min", f"{min(nums):.4f}")
+            col_report.add("max", f"{max(nums):.4f}")
         elif is_cat:
             nn = non_null_values(data)
             unique = set(str(v) for v in nn)
-            col_report.add('type',          'categorical')
-            col_report.add('unique_values', len(unique))
-            col_report.add('top_value',     _mode(nn))
+            col_report.add("type", "categorical")
+            col_report.add("unique_values", len(unique))
+            col_report.add("top_value", _mode(nn))
         else:
-            col_report.add('type', 'text / high-cardinality')
+            col_report.add("type", "text / high-cardinality")
 
         # ── Run detectors ────────────────────────────────────
         detect_missing_values(data, col, col_report, report)
@@ -225,7 +229,7 @@ def diagnose(dataset, target_col=None, dataset_name='dataset'):
         # are handled internally by detect_class_imbalance() in detectors.py.
         # No pre-filtering needed here — just pass is_target and let
         # the detector decide whether to raise an issue or not.
-        is_target = (col == target_col)
+        is_target = col == target_col
         detect_class_imbalance(data, col, col_report, report, is_target)
 
         report.column_reports[col] = col_report
@@ -243,11 +247,13 @@ def diagnose(dataset, target_col=None, dataset_name='dataset'):
 # PRIVATE HELPER
 # ──────────────────────────────────────────────────────────────
 
+
 def _mode(values):
     """Return the most common value in a list (simple mode)."""
     if not values:
         return None
     from collections import Counter
+
     return Counter(str(v) for v in values).most_common(1)[0][0]
 
 
@@ -255,7 +261,8 @@ def _mode(values):
 # PUBLIC CONVENIENCE FUNCTIONS
 # ──────────────────────────────────────────────────────────────
 
-def quick_scan(dataset, target_col=None, dataset_name='dataset'):
+
+def quick_scan(dataset, target_col=None, dataset_name="dataset"):
     """
     Run a full diagnosis AND immediately print the report to the console.
 
@@ -266,8 +273,7 @@ def quick_scan(dataset, target_col=None, dataset_name='dataset'):
     -------
     >>> quick_scan(my_dataset, target_col='survived')
     """
-    report = diagnose(dataset, target_col=target_col,
-                      dataset_name=dataset_name)
+    report = diagnose(dataset, target_col=target_col, dataset_name=dataset_name)
     print(report.summary())
     return report
 
@@ -354,6 +360,7 @@ def column_summary(dataset, col_name, target_col=None):
 # ──────────────────────────────────────────────────────────────
 # CONVENIENCE WRAPPERS
 # ──────────────────────────────────────────────────────────────
+
 
 def get_stats_df(dataset, target_col=None):
     """

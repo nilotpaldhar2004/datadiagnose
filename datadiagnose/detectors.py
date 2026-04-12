@@ -27,15 +27,23 @@ License : MIT
 
 from .models import Issue
 from .utils import (
-    is_missing, to_numeric_list, non_null_values,
-    skewness, iqr_bounds, zscore_outliers,
-    pearson_correlation, matches_any_keyword,
-    LEAKY_KEYWORDS, DATETIME_KEYWORDS, TEXT_KEYWORDS, GEO_KEYWORDS,
+    is_missing,
+    to_numeric_list,
+    non_null_values,
+    skewness,
+    iqr_bounds,
+    zscore_outliers,
+    pearson_correlation,
+    matches_any_keyword,
+    LEAKY_KEYWORDS,
+    DATETIME_KEYWORDS,
+    TEXT_KEYWORDS,
+    GEO_KEYWORDS,
 )
 from collections import Counter
 
-
 # 1. MISSING VALUE DETECTOR
+
 
 def detect_missing_values(data, col_name, col_report, diagnosis):
     """
@@ -53,38 +61,41 @@ def detect_missing_values(data, col_name, col_report, diagnosis):
     missing = sum(1 for v in data if is_missing(v))
     pct = round(missing / total * 100, 2) if total else 0.0
 
-    col_report.add('missing_count', missing)
-    col_report.add('missing_pct',   f'{pct:.1f}%')
+    col_report.add("missing_count", missing)
+    col_report.add("missing_pct", f"{pct:.1f}%")
 
     if missing == 0:
-        return   # nothing to do
+        return  # nothing to do
 
     if pct >= 60:
-        severity = 'critical'
-        desc = f'{pct:.1f}% of values are missing — column is mostly empty.'
+        severity = "critical"
+        desc = f"{pct:.1f}% of values are missing — column is mostly empty."
         fix = f"Drop column '{col_name}': df.drop(columns=['{col_name}'])"
     elif pct >= 30:
-        severity = 'high'
-        desc = f'{pct:.1f}% of values are missing — significant gap.'
-        fix = (f"Use IterativeImputer or KNNImputer from sklearn "
-               f"for column '{col_name}'.")
+        severity = "high"
+        desc = f"{pct:.1f}% of values are missing — significant gap."
+        fix = (
+            f"Use IterativeImputer or KNNImputer from sklearn "
+            f"for column '{col_name}'."
+        )
     elif pct >= 10:
-        severity = 'medium'
-        desc = f'{pct:.1f}% of values are missing.'
-        fix = (f"Fill '{col_name}' with median (numeric) "
-               f"or mode (categorical).")
+        severity = "medium"
+        desc = f"{pct:.1f}% of values are missing."
+        fix = f"Fill '{col_name}' with median (numeric) " f"or mode (categorical)."
     else:
-        severity = 'low'
-        desc = f'{pct:.1f}% of values are missing — small gap, easy to fix.'
+        severity = "low"
+        desc = f"{pct:.1f}% of values are missing — small gap, easy to fix."
         fix = f"df['{col_name}'].fillna(df['{col_name}'].median())"
 
-    diagnosis.add_issue(Issue(
-        title=f"Missing Values in '{col_name}'",
-        description=desc,
-        severity=severity,
-        column=col_name,
-        fix=fix,
-    ))
+    diagnosis.add_issue(
+        Issue(
+            title=f"Missing Values in '{col_name}'",
+            description=desc,
+            severity=severity,
+            column=col_name,
+            fix=fix,
+        )
+    )
     diagnosis.add_suggestion(fix)
 
 
@@ -123,11 +134,11 @@ def detect_outliers(data, col_name, col_report, diagnosis, is_target=False):
     z_out = zscore_outliers(nums)
 
     # Log metrics to the Column Report
-    col_report.add('outliers_iqr', f'{len(iqr_out)} ({iqr_pct:.1f}%)')
-    col_report.add('outliers_zscore', len(z_out))
-    col_report.add('iqr_fence', f'[{lower:.3f}, {upper:.3f}]')
-    col_report.add('q1', f'{q1:.3f}')
-    col_report.add('q3', f'{q3:.3f}')
+    col_report.add("outliers_iqr", f"{len(iqr_out)} ({iqr_pct:.1f}%)")
+    col_report.add("outliers_zscore", len(z_out))
+    col_report.add("iqr_fence", f"[{lower:.3f}, {upper:.3f}]")
+    col_report.add("q1", f"{q1:.3f}")
+    col_report.add("q3", f"{q3:.3f}")
 
     # Exit early if no outliers exist
     if len(iqr_out) == 0:
@@ -137,46 +148,61 @@ def detect_outliers(data, col_name, col_report, diagnosis, is_target=False):
 
     # HIGH SEVERITY (>15% outliers)
     if iqr_pct >= 15:
-        severity = 'high'
+        severity = "high"
         if is_target:
             # Focus on model-level robustness for targets, not data-level clipping
-            fix = (f"Target '{col_name}' has extreme outliers. Avoid clipping target labels; "
-                   f"instead, use robust estimators like HuberRegressor or RANSACClassifier.")
+            fix = (
+                f"Target '{col_name}' has extreme outliers. Avoid clipping target labels; "
+                f"instead, use robust estimators like HuberRegressor or RANSACClassifier."
+            )
         else:
-            fix = (f"Apply RobustScaler to '{col_name}' or cap values with: "
-                   f"df['{col_name}'].clip(lower={lower:.1f}, upper={upper:.1f})")
+            fix = (
+                f"Apply RobustScaler to '{col_name}' or cap values with: "
+                f"df['{col_name}'].clip(lower={lower:.1f}, upper={upper:.1f})"
+            )
 
     # MEDIUM SEVERITY (5% - 15% outliers)
     elif iqr_pct >= 5:
-        severity = 'medium'
+        severity = "medium"
         if is_target:
-            fix = (f"Target '{col_name}' is unstable. Consider predicting "
-                   f"log({col_name}) to reduce outlier impact.")
+            fix = (
+                f"Target '{col_name}' is unstable. Consider predicting "
+                f"log({col_name}) to reduce outlier impact."
+            )
         else:
-            fix = (f"Winsorise '{col_name}': "
-                   f"df['{col_name}'].clip(df['{col_name}'].quantile(0.01), "
-                   f"df['{col_name}'].quantile(0.99))")
+            fix = (
+                f"Winsorise '{col_name}': "
+                f"df['{col_name}'].clip(df['{col_name}'].quantile(0.01), "
+                f"df['{col_name}'].quantile(0.99))"
+            )
 
     # LOW SEVERITY (<5% outliers)
     else:
-        severity = 'low'
-        fix = (f"Investigate {len(iqr_out)} potential outliers in '{col_name}' "
-               f"manually to check for data entry errors.")
+        severity = "low"
+        fix = (
+            f"Investigate {len(iqr_out)} potential outliers in '{col_name}' "
+            f"manually to check for data entry errors."
+        )
 
     # ── Step C: Add to Diagnosis Report ─────────────────────
-    diagnosis.add_issue(Issue(
-        title=f"Outliers Detected in '{col_name}'",
-        description=(f"{len(iqr_out)} outliers ({iqr_pct:.1f}%) detected via IQR. "
-                     f"Fence: [{lower:.3f}, {upper:.3f}]. "
-                     f"Z-score method also found {len(z_out)} outliers."),
-        severity=severity,
-        column=col_name,
-        fix=fix,
-    ))
+    diagnosis.add_issue(
+        Issue(
+            title=f"Outliers Detected in '{col_name}'",
+            description=(
+                f"{len(iqr_out)} outliers ({iqr_pct:.1f}%) detected via IQR. "
+                f"Fence: [{lower:.3f}, {upper:.3f}]. "
+                f"Z-score method also found {len(z_out)} outliers."
+            ),
+            severity=severity,
+            column=col_name,
+            fix=fix,
+        )
+    )
     diagnosis.add_suggestion(fix)
 
 
 # 3. SKEWNESS DETECTOR
+
 
 def detect_skewness(data, col_name, col_report, diagnosis, is_target=False):
     """
@@ -200,66 +226,77 @@ def detect_skewness(data, col_name, col_report, diagnosis, is_target=False):
     # ── Step A: Calculate Skewness ──────────────────────────
     skew_val = skewness(nums)
     abs_skew = abs(skew_val)
-    direction = 'right-skewed (positive)' if skew_val > 0 else 'left-skewed (negative)'
+    direction = "right-skewed (positive)" if skew_val > 0 else "left-skewed (negative)"
 
-    col_report.add('skewness', f'{skew_val:.4f}')
+    col_report.add("skewness", f"{skew_val:.4f}")
 
     # Exit if the distribution is roughly symmetric
     if abs_skew < 0.5:
-        col_report.add('skew_status', 'symmetric')
+        col_report.add("skew_status", "symmetric")
         return
 
     # ── Step B: Logic for Severity and Fix ───────────────────
 
     # 1. MILD SKEW (0.5 to 1.0)
     if abs_skew < 1.0:
-        severity = 'low'
-        label = 'mildly skewed'
+        severity = "low"
+        label = "mildly skewed"
         if is_target:
-            fix = (f"Target '{col_name}' is mildly skewed. Consider a square root "
-                   f"transform to help normalize model errors.")
+            fix = (
+                f"Target '{col_name}' is mildly skewed. Consider a square root "
+                f"transform to help normalize model errors."
+            )
         else:
             fix = f"Apply np.sqrt(df['{col_name}']) to handle mild {direction} skew."
 
     # 2. HIGH SKEW (1.0 to 2.0)
     elif abs_skew < 2.0:
-        severity = 'medium'
-        label = 'highly skewed'
+        severity = "medium"
+        label = "highly skewed"
         if is_target:
-            fix = (f"Highly skewed target '{col_name}'. Predicting log({col_name}) or "
-                   f"using a TransformedTargetRegressor often improves R-squared.")
+            fix = (
+                f"Highly skewed target '{col_name}'. Predicting log({col_name}) or "
+                f"using a TransformedTargetRegressor often improves R-squared."
+            )
         else:
             fix = f"Apply np.log1p(df['{col_name}']) to pull in the long tail."
 
     # 3. EXTREME SKEW (> 2.0)
     else:
-        severity = 'high'
-        label = 'extremely skewed'
+        severity = "high"
+        label = "extremely skewed"
         if is_target:
-            fix = (f"Extremely skewed target. Use a PowerTransformer "
-                   f"(Box-Cox/Yeo-Johnson) on '{col_name}' to stabilize variance "
-                   f"and make residuals normal.")
+            fix = (
+                f"Extremely skewed target. Use a PowerTransformer "
+                f"(Box-Cox/Yeo-Johnson) on '{col_name}' to stabilize variance "
+                f"and make residuals normal."
+            )
         else:
-            fix = (f"Apply sklearn.preprocessing.PowerTransformer(method='yeo-johnson') "
-                   f"to column '{col_name}'.")
+            fix = (
+                f"Apply sklearn.preprocessing.PowerTransformer(method='yeo-johnson') "
+                f"to column '{col_name}'."
+            )
 
     # ── Step C: Update Reports ──────────────────────────────
-    col_report.add('skew_status', f'{label} ({direction})')
+    col_report.add("skew_status", f"{label} ({direction})")
 
-    diagnosis.add_issue(Issue(
-        title=f"Skewed Distribution in '{col_name}'",
-        description=(f"'{col_name}' is {label} (skewness = {skew_val:.4f}). "
-                     f"This violates the normality assumption for linear models/NNs."),
-        severity=severity,
-        column=col_name,
-        fix=fix,
-    ))
+    diagnosis.add_issue(
+        Issue(
+            title=f"Skewed Distribution in '{col_name}'",
+            description=(
+                f"'{col_name}' is {label} (skewness = {skew_val:.4f}). "
+                f"This violates the normality assumption for linear models/NNs."
+            ),
+            severity=severity,
+            column=col_name,
+            fix=fix,
+        )
+    )
     diagnosis.add_suggestion(fix)
 
 
 # 4. CLASS IMBALANCE DETECTOR
-def detect_class_imbalance(data, col_name, col_report, diagnosis,
-                           is_target=False):
+def detect_class_imbalance(data, col_name, col_report, diagnosis, is_target=False):
     """
     Detect class imbalance in categorical or binary columns.
 
@@ -306,11 +343,11 @@ def detect_class_imbalance(data, col_name, col_report, diagnosis,
         ratio = round(most_common_n / max(least_common_n, 1), 2)
         majority_pct = round(most_common_n / len(nn) * 100, 1)
         minority_pct = round(least_common_n / len(nn) * 100, 1)
-        col_report.add('n_classes',       n_class)
-        col_report.add('majority_pct',    f'{majority_pct:.1f}%')
-        col_report.add('minority_pct',    f'{minority_pct:.1f}%')
-        col_report.add('imbalance_ratio', f'{ratio:.1f}:1')
-        return   # record stats but do NOT raise an issue
+        col_report.add("n_classes", n_class)
+        col_report.add("majority_pct", f"{majority_pct:.1f}%")
+        col_report.add("minority_pct", f"{minority_pct:.1f}%")
+        col_report.add("imbalance_ratio", f"{ratio:.1f}:1")
+        return  # record stats but do NOT raise an issue
 
     # ── Step B: Identify Classes ────────────────────────────
     counts = Counter(str(v) for v in nn)
@@ -330,45 +367,56 @@ def detect_class_imbalance(data, col_name, col_report, diagnosis,
     minority_pct = round(least_common_n / len(nn) * 100, 1)
 
     # Log stats to ColumnReport
-    col_report.add('n_classes', n_class)
-    col_report.add('majority_pct', f'{majority_pct:.1f}%')
-    col_report.add('minority_pct', f'{minority_pct:.1f}%')
-    col_report.add('imbalance_ratio', f'{ratio:.1f}:1')
+    col_report.add("n_classes", n_class)
+    col_report.add("majority_pct", f"{majority_pct:.1f}%")
+    col_report.add("minority_pct", f"{minority_pct:.1f}%")
+    col_report.add("imbalance_ratio", f"{ratio:.1f}:1")
 
     # ── Step C: Severity and Fix Logic ──────────────────────
-    label = 'target column' if is_target else f"column '{col_name}'"
+    label = "target column" if is_target else f"column '{col_name}'"
 
     if ratio >= 10:
-        severity = 'critical'
-        fix = (f"Severe imbalance in {label}. Use SMOTE (imblearn) to oversample, "
-               f"or use class_weight='balanced'. Evaluate using F1-Score or PRC, NOT accuracy.")
+        severity = "critical"
+        fix = (
+            f"Severe imbalance in {label}. Use SMOTE (imblearn) to oversample, "
+            f"or use class_weight='balanced'. Evaluate using F1-Score or PRC, NOT accuracy."
+        )
     elif ratio >= 5:
-        severity = 'high'
-        fix = ("Significant imbalance. Use StratifiedKFold cross-validation and "
-               "consider RandomOverSampler or BalancedRandomForestClassifier.")
+        severity = "high"
+        fix = (
+            "Significant imbalance. Use StratifiedKFold cross-validation and "
+            "consider RandomOverSampler or BalancedRandomForestClassifier."
+        )
     elif ratio >= 3:
-        severity = 'medium'
-        fix = ("Moderate imbalance. Ensure your train-test split is stratified: "
-               "train_test_split(..., stratify=y).")
+        severity = "medium"
+        fix = (
+            "Moderate imbalance. Ensure your train-test split is stratified: "
+            "train_test_split(..., stratify=y)."
+        )
     else:
         # Ratio < 3:1 is generally considered acceptable for most ML models
         return
 
     # ── Step D: Update Diagnosis ────────────────────────────
-    diagnosis.add_issue(Issue(
-        title=f"Class Imbalance in '{col_name}'",
-        description=(f"In {label}: majority class is {majority_pct:.1f}%, "
-                     f"minority class is {minority_pct:.1f}% (Ratio {ratio:.1f}:1)."),
-        severity=severity,
-        column=col_name,
-        fix=fix,
-    ))
+    diagnosis.add_issue(
+        Issue(
+            title=f"Class Imbalance in '{col_name}'",
+            description=(
+                f"In {label}: majority class is {majority_pct:.1f}%, "
+                f"minority class is {minority_pct:.1f}% (Ratio {ratio:.1f}:1)."
+            ),
+            severity=severity,
+            column=col_name,
+            fix=fix,
+        )
+    )
     diagnosis.add_suggestion(fix)
 
 
 # ──────────────────────────────────────────────────────────────
 # 5. DATA LEAKAGE DETECTOR
 # ──────────────────────────────────────────────────────────────
+
 
 def detect_data_leakage(dataset, col_names, target_col, diagnosis):
     """
@@ -400,17 +448,24 @@ def detect_data_leakage(dataset, col_names, target_col, diagnosis):
 
         # ── Strategy 1: Name heuristic ──────────────────────
         if matches_any_keyword(col, LEAKY_KEYWORDS):
-            diagnosis.add_issue(Issue(
-                title=f"Possible Data Leakage (name): '{col}'",
-                description=(f"Column '{col}' matches known leaky keywords. "
-                             f"It likely contains target-derived info."),
-                severity='high',
-                column=col,
-                fix=(f"Investigate '{col}'. If it is a proxy for the target "
-                     f"or captured after the event, drop it."),
-            ))
+            diagnosis.add_issue(
+                Issue(
+                    title=f"Possible Data Leakage (name): '{col}'",
+                    description=(
+                        f"Column '{col}' matches known leaky keywords. "
+                        f"It likely contains target-derived info."
+                    ),
+                    severity="high",
+                    column=col,
+                    fix=(
+                        f"Investigate '{col}'. If it is a proxy for the target "
+                        f"or captured after the event, drop it."
+                    ),
+                )
+            )
             diagnosis.add_suggestion(
-                f"Check '{col}' — name suggests it may be a target proxy.")
+                f"Check '{col}' — name suggests it may be a target proxy."
+            )
 
         # ── Strategy 2: Correlation check ───────────────────
         col_data = dataset[col]
@@ -434,23 +489,31 @@ def detect_data_leakage(dataset, col_names, target_col, diagnosis):
                 if corr is not None and abs(corr) > 0.98:
                     # Logic: Only mark as Critical if we have enough samples (>15)
                     # Small samples (e.g. 6 rows) often have high random correlation.
-                    severity = 'critical' if len(pairs) > 15 else 'high'
+                    severity = "critical" if len(pairs) > 15 else "high"
 
-                    diagnosis.add_issue(Issue(
-                        title=f"Extreme Correlation: '{col}' ↔ '{target_col}'",
-                        description=(f"'{col}' has a correlation of {corr:.4f} with target. "
-                                     f"Calculated from {len(pairs)} rows. This feature "
-                                     f"likely contains 'future' information."),
-                        severity=severity,
-                        column=col,
-                        fix=(f"Remove '{col}' immediately unless you are 100% "
-                             f"certain this data is available during inference."),
-                    ))
+                    diagnosis.add_issue(
+                        Issue(
+                            title=f"Extreme Correlation: '{col}' ↔ '{target_col}'",
+                            description=(
+                                f"'{col}' has a correlation of {corr:.4f} with target. "
+                                f"Calculated from {len(pairs)} rows. This feature "
+                                f"likely contains 'future' information."
+                            ),
+                            severity=severity,
+                            column=col,
+                            fix=(
+                                f"Remove '{col}' immediately unless you are 100% "
+                                f"certain this data is available during inference."
+                            ),
+                        )
+                    )
                     diagnosis.add_suggestion(
-                        f"Drop '{col}' — correlation {corr:.4f} is too high for a safe feature.")
+                        f"Drop '{col}' — correlation {corr:.4f} is too high for a safe feature."
+                    )
 
 
 # 6. DUPLICATE ROW DETECTOR
+
 
 def detect_duplicate_rows(dataset, col_names, diagnosis):
     """
@@ -478,8 +541,7 @@ def detect_duplicate_rows(dataset, col_names, diagnosis):
 
     # Convert each row to a tuple of string representations
     row_tuples = [
-        tuple(str(dataset[col][i]) for col in col_names)
-        for i in range(n_rows)
+        tuple(str(dataset[col][i]) for col in col_names) for i in range(n_rows)
     ]
 
     n_unique = len(set(row_tuples))
@@ -489,16 +551,20 @@ def detect_duplicate_rows(dataset, col_names, diagnosis):
         return
 
     dup_pct = round(n_duplicate / n_rows * 100, 2)
-    severity = 'high' if dup_pct > 5 else 'medium' if dup_pct > 1 else 'low'
+    severity = "high" if dup_pct > 5 else "medium" if dup_pct > 1 else "low"
     fix = f"df.drop_duplicates(inplace=True)  # removes {n_duplicate} duplicate rows"
 
-    diagnosis.add_issue(Issue(
-        title='Duplicate Rows Detected',
-        description=(f"{n_duplicate} duplicate rows found "
-                     f"({dup_pct:.1f}% of {n_rows} total rows)."),
-        severity=severity,
-        fix=fix,
-    ))
+    diagnosis.add_issue(
+        Issue(
+            title="Duplicate Rows Detected",
+            description=(
+                f"{n_duplicate} duplicate rows found "
+                f"({dup_pct:.1f}% of {n_rows} total rows)."
+            ),
+            severity=severity,
+            fix=fix,
+        )
+    )
     diagnosis.add_suggestion(fix)
 
 
@@ -533,21 +599,26 @@ def detect_constant_columns(dataset, col_names, diagnosis):
         unique_vals = set(str(v) for v in nn)
         if len(unique_vals) == 1:
             constant_val = nn[0]
-            fix = f"df.drop(columns=['{col}'], inplace=True)  # constant = {constant_val}"
-            diagnosis.add_issue(Issue(
-                title=f"Constant Column: '{col}'",
-                description=(f"Every non-null value in '{col}' is '{constant_val}'. "
-                             f"Zero variance — zero information for the model."),
-                severity='medium',
-                column=col,
-                fix=fix,
-            ))
+            fix = (
+                f"df.drop(columns=['{col}'], inplace=True)  # constant = {constant_val}"
+            )
+            diagnosis.add_issue(
+                Issue(
+                    title=f"Constant Column: '{col}'",
+                    description=(
+                        f"Every non-null value in '{col}' is '{constant_val}'. "
+                        f"Zero variance — zero information for the model."
+                    ),
+                    severity="medium",
+                    column=col,
+                    fix=fix,
+                )
+            )
             diagnosis.add_suggestion(fix)
 
 
 # 8. HIGH CARDINALITY DETECTOR
-def detect_high_cardinality(dataset, col_names, diagnosis,
-                            unique_ratio_threshold=0.9):
+def detect_high_cardinality(dataset, col_names, diagnosis, unique_ratio_threshold=0.9):
     """
     Detect text columns where almost every value is unique.
 
@@ -581,27 +652,33 @@ def detect_high_cardinality(dataset, col_names, diagnosis,
         # Only check non-numeric columns
         nums = to_numeric_list(data)
         if nums is not None:
-            continue   # numeric column — skip
+            continue  # numeric column — skip
 
         nn = non_null_values(data)
         if len(nn) < 10:
-            continue   # too few values to judge
+            continue  # too few values to judge
 
         unique = set(str(v) for v in nn)
         unique_ratio = len(unique) / len(nn)
 
         if unique_ratio >= unique_ratio_threshold:
-            fix = (f"Drop '{col}' if it is an ID column, or apply "
-                   f"TargetEncoder / frequency encoding instead of one-hot encoding.")
-            diagnosis.add_issue(Issue(
-                title=f"High Cardinality Column: '{col}'",
-                description=(f"'{col}' has {len(unique)} unique values out of "
-                             f"{len(nn)} non-null rows ({unique_ratio*100:.1f}% unique). "
-                             f"Likely an ID or free-text column."),
-                severity='medium',
-                column=col,
-                fix=fix,
-            ))
+            fix = (
+                f"Drop '{col}' if it is an ID column, or apply "
+                f"TargetEncoder / frequency encoding instead of one-hot encoding."
+            )
+            diagnosis.add_issue(
+                Issue(
+                    title=f"High Cardinality Column: '{col}'",
+                    description=(
+                        f"'{col}' has {len(unique)} unique values out of "
+                        f"{len(nn)} non-null rows ({unique_ratio*100:.1f}% unique). "
+                        f"Likely an ID or free-text column."
+                    ),
+                    severity="medium",
+                    column=col,
+                    fix=fix,
+                )
+            )
             diagnosis.add_suggestion(fix)
 
 
@@ -661,12 +738,11 @@ def suggest_models(dataset, col_names, target_col, diagnosis):
     # ── Step A: No target → Unsupervised Learning ────────────
     if not target_col or target_col not in col_names:
         diagnosis.model_types += [
-            'K-Means Clustering (sklearn.cluster.KMeans)',
-            'DBSCAN — density-based clustering for noisy data',
-            'PCA — dimensionality reduction / visualization'
+            "K-Means Clustering (sklearn.cluster.KMeans)",
+            "DBSCAN — density-based clustering for noisy data",
+            "PCA — dimensionality reduction / visualization",
         ]
-        diagnosis.add_suggestion(
-            "No target specified: running in unsupervised mode.")
+        diagnosis.add_suggestion("No target specified: running in unsupervised mode.")
         return
 
     # ── Step B: Determine Task Type (Classification vs Regression) ──
@@ -680,32 +756,32 @@ def suggest_models(dataset, col_names, target_col, diagnosis):
     is_numeric = target_nums is not None
 
     if is_numeric and n_unique > 20:
-        task = 'regression'
+        task = "regression"
     elif n_unique == 2:
-        task = 'binary_classification'
+        task = "binary_classification"
     elif 2 < n_unique <= 20:
-        task = 'multiclass_classification'
+        task = "multiclass_classification"
     else:
-        task = 'unknown'
+        task = "unknown"
 
     # ── Step C: Model Recommendations ────────────────────────
-    if task == 'regression':
+    if task == "regression":
         diagnosis.model_types += [
-            'LinearRegression / Ridge — baseline (start here)',
-            'RandomForestRegressor — handles non-linear patterns well',
-            'XGBoost / LightGBM — usually provides best accuracy'
+            "LinearRegression / Ridge — baseline (start here)",
+            "RandomForestRegressor — handles non-linear patterns well",
+            "XGBoost / LightGBM — usually provides best accuracy",
         ]
-    elif task == 'binary_classification':
+    elif task == "binary_classification":
         diagnosis.model_types += [
-            'LogisticRegression — baseline (fast and interpretable)',
-            'RandomForestClassifier — robust against outliers',
-            'LGBMClassifier / XGBClassifier — top-tier performance'
+            "LogisticRegression — baseline (fast and interpretable)",
+            "RandomForestClassifier — robust against outliers",
+            "LGBMClassifier / XGBClassifier — top-tier performance",
         ]
-    elif task == 'multiclass_classification':
+    elif task == "multiclass_classification":
         diagnosis.model_types += [
             'LogisticRegression(multi_class="multinomial")',
-            'RandomForestClassifier — handles multiple classes natively',
-            'GradientBoostingClassifier — high performance'
+            "RandomForestClassifier — handles multiple classes natively",
+            "GradientBoostingClassifier — high performance",
         ]
     else:
         diagnosis.model_types.append(
@@ -724,16 +800,19 @@ def suggest_models(dataset, col_names, target_col, diagnosis):
     elif n_rows > 5000:
         diagnosis.add_suggestion(
             f"Large sample ({n_rows} rows): Gradient Boosting (LightGBM/CatBoost) "
-            f"will significantly outperform simpler models here.")
+            f"will significantly outperform simpler models here."
+        )
 
     # 2. Dimensionality (Wide datasets)
     if n_cols > 50:
         diagnosis.add_suggestion(
             f"High feature count ({n_cols}): Use Lasso (L1) regression "
-            f"or 'SelectFromModel' to reduce noise before training.")
+            f"or 'SelectFromModel' to reduce noise before training."
+        )
 
     # 3. Imbalance check helper (if target is binary)
-    if task == 'binary_classification' and n_rows > 0:
+    if task == "binary_classification" and n_rows > 0:
         # Check if the suggest_models should trigger an evaluation metric warning
         diagnosis.add_suggestion(
-            "For classification: evaluate using ROC-AUC or F1-Score instead of Accuracy.")
+            "For classification: evaluate using ROC-AUC or F1-Score instead of Accuracy."
+        )

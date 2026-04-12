@@ -54,27 +54,23 @@ from .core import (
     column_summary,
 )
 
-from .models import (
-    DiagnosisReport,
-    Issue,
-    ColumnReport
-)
+from .models import DiagnosisReport, Issue, ColumnReport
 
 # ── Version info ──────────────────────────────────────────────
-__version__ = '1.0.4'
-__author__ = 'Nilotpal Dhar'
-__license__ = 'MIT'
+__version__ = "1.0.4"
+__author__ = "Nilotpal Dhar"
+__license__ = "MIT"
 
 # ── Public API ────────────────────────────────────────────────
 __all__ = [
-    'diagnose',
-    'get_stats_df',
-    'quick_scan',
-    'health_score',
-    'list_issues',
-    'get_suggestions',
-    'column_summary',
-    'DiagnosisReport',
-    'Issue',
-    'ColumnReport',
+    "diagnose",
+    "get_stats_df",
+    "quick_scan",
+    "health_score",
+    "list_issues",
+    "get_suggestions",
+    "column_summary",
+    "DiagnosisReport",
+    "Issue",
+    "ColumnReport",
 ]

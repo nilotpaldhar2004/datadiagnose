@@ -33,7 +33,7 @@ def is_missing(value):
     """
     if value is None:
         return True
-    if isinstance(value, str) and value.strip() == '':
+    if isinstance(value, str) and value.strip() == "":
         return True
     if isinstance(value, float) and math.isnan(value):
         return True
@@ -62,7 +62,7 @@ def to_numeric_list(values):
         try:
             result.append(float(v))
         except (ValueError, TypeError):
-            return None   # found a non-numeric value → not a numeric column
+            return None  # found a non-numeric value → not a numeric column
     return result if len(result) >= 2 else None
 
 
@@ -99,6 +99,7 @@ def non_null_values(values):
 # ──────────────────────────────────────────────────────────────
 # BASIC STATISTICS  (reimplemented without external libraries)
 # ──────────────────────────────────────────────────────────────
+
 
 def mean(nums):
     """
@@ -185,7 +186,7 @@ def skewness(nums):
     m = mean(nums)
     s = std(nums)
     if s == 0:
-        return 0.0   # constant column — no skewness meaningful
+        return 0.0  # constant column — no skewness meaningful
     correction = n / ((n - 1) * (n - 2))
     return correction * sum(((x - m) / s) ** 3 for x in nums)
 
@@ -230,8 +231,8 @@ def iqr_bounds(nums):
     q3 = percentile(nums, 75)
     iqr = q3 - q1
     return (
-        q1 - 1.5 * iqr,   # lower fence
-        q3 + 1.5 * iqr,   # upper fence
+        q1 - 1.5 * iqr,  # lower fence
+        q3 + 1.5 * iqr,  # upper fence
         q1,
         q3,
         iqr,
@@ -298,7 +299,7 @@ def pearson_correlation(x, y):
     denom_y = math.sqrt(sum((p[1] - my) ** 2 for p in pairs))
 
     if denom_x == 0 or denom_y == 0:
-        return None   # one variable is constant — correlation undefined
+        return None  # one variable is constant — correlation undefined
 
     return numerator / (denom_x * denom_y)
 
@@ -309,27 +310,65 @@ def pearson_correlation(x, y):
 
 # Keywords that suggest a column contains datetime data
 DATETIME_KEYWORDS = {
-    'date', 'time', 'year', 'month', 'day',
-    'created', 'updated', 'timestamp', 'datetime', 'dob', 'birth',
+    "date",
+    "time",
+    "year",
+    "month",
+    "day",
+    "created",
+    "updated",
+    "timestamp",
+    "datetime",
+    "dob",
+    "birth",
 }
 
 # Keywords that suggest a column contains free text
 TEXT_KEYWORDS = {
-    'name', 'description', 'desc', 'comment', 'text',
-    'review', 'title', 'message', 'note', 'feedback', 'summary',
+    "name",
+    "description",
+    "desc",
+    "comment",
+    "text",
+    "review",
+    "title",
+    "message",
+    "note",
+    "feedback",
+    "summary",
 }
 
 # Keywords that suggest a column contains geographic data
 GEO_KEYWORDS = {
-    'lat', 'lon', 'latitude', 'longitude', 'location',
-    'city', 'zip', 'postal', 'address', 'country', 'region', 'state',
+    "lat",
+    "lon",
+    "latitude",
+    "longitude",
+    "location",
+    "city",
+    "zip",
+    "postal",
+    "address",
+    "country",
+    "region",
+    "state",
 }
 
 # Keywords that suggest a column may leak target information
 LEAKY_KEYWORDS = {
-    'result', 'outcome', 'label', 'target', 'output',
-    'prediction', 'pred', 'answer', 'final', 'ground_truth',
-    'actual', 'true_label', 'y_true',
+    "result",
+    "outcome",
+    "label",
+    "target",
+    "output",
+    "prediction",
+    "pred",
+    "answer",
+    "final",
+    "ground_truth",
+    "actual",
+    "true_label",
+    "y_true",
 }
 
 
@@ -342,7 +381,7 @@ def column_keywords(col_name):
     'createdAt'     → {'createdat'}   (simple lower — good enough)
     """
     # Replace common separators with space, lower, split
-    normalised = col_name.lower().replace('_', ' ').replace('-', ' ')
+    normalised = col_name.lower().replace("_", " ").replace("-", " ")
     return set(normalised.split())
 
 

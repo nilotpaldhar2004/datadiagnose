@@ -13,10 +13,10 @@ License : MIT
 
 """
 
-
 # ──────────────────────────────────────────────────────────────
 # ISSUE
 # ──────────────────────────────────────────────────────────────
+
 
 class Issue:
     """
@@ -34,21 +34,21 @@ class Issue:
 
     # How many health-score points each severity level costs
     SEVERITY_POINTS = {
-        'critical': 25,
-        'high':     15,
-        'medium':    8,
-        'low':       3,
+        "critical": 25,
+        "high": 15,
+        "medium": 8,
+        "low": 3,
     }
 
     # Emoji badge for each severity (used in the report summary)
     SEVERITY_BADGE = {
-        'critical': '🔴 CRITICAL',
-        'high':     '🟠 HIGH',
-        'medium':   '🟡 MEDIUM',
-        'low':      '⚪ LOW',
+        "critical": "🔴 CRITICAL",
+        "high": "🟠 HIGH",
+        "medium": "🟡 MEDIUM",
+        "low": "⚪ LOW",
     }
 
-    def __init__(self, title, description, severity='medium', column=None, fix=''):
+    def __init__(self, title, description, severity="medium", column=None, fix=""):
         if severity not in self.SEVERITY_POINTS:
             raise ValueError(
                 f"Invalid severity '{severity}'. "
@@ -66,13 +66,14 @@ class Issue:
         return self.SEVERITY_BADGE.get(self.severity, self.severity.upper())
 
     def __repr__(self):
-        col = f" [col='{self.column}']" if self.column else ''
+        col = f" [col='{self.column}']" if self.column else ""
         return f"Issue({self.badge()}{col}: {self.title})"
 
 
 # ──────────────────────────────────────────────────────────────
 # COLUMN REPORT
 # ──────────────────────────────────────────────────────────────
+
 
 class ColumnReport:
     """
@@ -107,6 +108,7 @@ class ColumnReport:
 # DIAGNOSIS REPORT
 # ──────────────────────────────────────────────────────────────
 
+
 class DiagnosisReport:
     """
     The complete report returned by diagnose().
@@ -123,7 +125,7 @@ class DiagnosisReport:
     column_reports : dict           — {col_name: ColumnReport}
     """
 
-    def __init__(self, dataset_name='dataset'):
+    def __init__(self, dataset_name="dataset"):
         self.dataset_name = dataset_name
         self.n_rows = 0
         self.n_cols = 0
@@ -163,12 +165,12 @@ class DiagnosisReport:
 
         # Recompute score from scratch on every add
         # (simpler than tracking deltas and avoids drift bugs)
-        n_critical = sum(1 for i in self.issues if i.severity == 'critical')
-        n_high = sum(1 for i in self.issues if i.severity == 'high')
+        n_critical = sum(1 for i in self.issues if i.severity == "critical")
+        n_high = sum(1 for i in self.issues if i.severity == "high")
         medium_low = sorted(
-            [i for i in self.issues if i.severity in ('medium', 'low')],
+            [i for i in self.issues if i.severity in ("medium", "low")],
             key=lambda x: x.severity_points,
-            reverse=True
+            reverse=True,
         )
         n_ml = len(medium_low)
 
@@ -183,10 +185,7 @@ class DiagnosisReport:
         if n_ml <= 5:
             ml_penalty = sum(i.severity_points for i in medium_low)
         else:
-            ml_penalty = (
-                sum(i.severity_points for i in medium_low[:5])
-                + (n_ml - 5) * 2
-            )
+            ml_penalty = sum(i.severity_points for i in medium_low[:5]) + (n_ml - 5) * 2
 
         total_penalty = critical_penalty + high_penalty + ml_penalty
         self.score = max(0, 100 - total_penalty)
@@ -206,19 +205,19 @@ class DiagnosisReport:
         return [i for i in self.issues if i.severity == severity]
 
     def critical_issues(self):
-        return self.issues_by_severity('critical')
+        return self.issues_by_severity("critical")
 
     def high_issues(self):
-        return self.issues_by_severity('high')
+        return self.issues_by_severity("high")
 
     def status(self):
         """Return a human-readable status string based on score."""
         if self.score >= 80:
-            return ' Healthy'
+            return " Healthy"
         elif self.score >= 50:
-            return ' Needs Work'
+            return " Needs Work"
         else:
-            return ' Critical'
+            return " Critical"
 
     # ── Report formatting ───────────────────────────────────
 
@@ -228,63 +227,63 @@ class DiagnosisReport:
         This is what print(report) shows.
         """
         lines = []
-        W = 62   # report width
+        W = 62  # report width
 
-        lines.append('=' * W)
+        lines.append("=" * W)
         lines.append(f"  DATADIAGNOSE REPORT — {self.dataset_name.upper()}")
-        lines.append('=' * W)
+        lines.append("=" * W)
         lines.append(f"  Rows    : {self.n_rows}")
         lines.append(f"  Columns : {self.n_cols}")
         lines.append(f"  Score   : {self.score}/100   {self.status()}")
-        lines.append('-' * W)
+        lines.append("-" * W)
 
         # Issues
         if not self.issues:
-            lines.append('  No issues detected. Your dataset looks clean!')
+            lines.append("  No issues detected. Your dataset looks clean!")
         else:
             lines.append(f" Issues Found ({len(self.issues)})")
-            lines.append('')
+            lines.append("")
             for idx, issue in enumerate(self.issues, 1):
                 lines.append(f"  {idx}. {issue.badge()}")
                 lines.append(f"     {issue.title}")
                 lines.append(f"     → {issue.description}")
                 if issue.fix:
                     lines.append(f"      Fix: {issue.fix}")
-                lines.append('')
+                lines.append("")
 
-        lines.append('-' * W)
+        lines.append("-" * W)
 
         # Suggestions
         if self.suggestions:
             lines.append(f"  Suggestions ({len(self.suggestions)})")
-            lines.append('')
+            lines.append("")
             for idx, s in enumerate(self.suggestions, 1):
                 lines.append(f"  {idx}. {s}")
-            lines.append('')
+            lines.append("")
 
-        lines.append('-' * W)
+        lines.append("-" * W)
 
         # Models
         if self.model_types:
-            lines.append('  Recommended Models')
-            lines.append('')
+            lines.append("  Recommended Models")
+            lines.append("")
             for m in self.model_types:
                 lines.append(f"  •  {m}")
-            lines.append('')
+            lines.append("")
 
-        lines.append('-' * W)
+        lines.append("-" * W)
 
         # Per-column stats
-        lines.append('  Column Statistics')
-        lines.append('')
+        lines.append("  Column Statistics")
+        lines.append("")
         for col, rep in self.column_reports.items():
             lines.append(f"  [{col}]")
             for k, v in rep.details.items():
                 lines.append(f"    {k:<18} {v}")
-            lines.append('')
+            lines.append("")
 
-        lines.append('=' * W)
-        return '\n'.join(lines)
+        lines.append("=" * W)
+        return "\n".join(lines)
 
     def __str__(self):
         return self.summary()
@@ -322,7 +321,7 @@ class DiagnosisReport:
 
         # 2. Load into DataFrame
         # orient='index' handles the case where columns have different numbers of stats
-        df = pd.DataFrame.from_dict(all_stats, orient='index')
+        df = pd.DataFrame.from_dict(all_stats, orient="index")
 
         # 3. Transpose so it's a "Tall" report (Metrics vs Features)
         # This prevents the horizontal scrolling problem.
