@@ -1,4 +1,5 @@
 """
+
 detectors.py
 ============
 All 8 individual detector functions.
@@ -21,6 +22,7 @@ The detectors are:
 
 Author  : Nilotpal Dhar
 License : MIT
+
 """
 
 from .models import Issue
