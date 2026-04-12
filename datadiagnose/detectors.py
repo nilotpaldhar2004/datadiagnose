@@ -148,7 +148,8 @@ def detect_outliers(data, col_name, col_report, diagnosis, is_target=False):
     elif iqr_pct >= 5:
         severity = 'medium'
         if is_target:
-            fix = f"Target '{col_name}' is unstable. Consider predicting log({col_name}) to reduce outlier impact."
+            fix = (f"Target '{col_name}' is unstable. Consider predicting "
+                   f"log({col_name}) to reduce outlier impact.")
         else:
             fix = (f"Winsorise '{col_name}': "
                    f"df['{col_name}'].clip(df['{col_name}'].quantile(0.01), "
@@ -157,7 +158,8 @@ def detect_outliers(data, col_name, col_report, diagnosis, is_target=False):
     # LOW SEVERITY (<5% outliers)
     else:
         severity = 'low'
-        fix = f"Investigate {len(iqr_out)} potential outliers in '{col_name}' manually to check for data entry errors."
+        fix = (f"Investigate {len(iqr_out)} potential outliers in '{col_name}' "
+               f"manually to check for data entry errors.")
 
     # ── Step C: Add to Diagnosis Report ─────────────────────
     diagnosis.add_issue(Issue(
@@ -212,7 +214,8 @@ def detect_skewness(data, col_name, col_report, diagnosis, is_target=False):
         severity = 'low'
         label = 'mildly skewed'
         if is_target:
-            fix = f"Target '{col_name}' is mildly skewed. Consider a square root transform to help normalize model errors."
+            fix = (f"Target '{col_name}' is mildly skewed. Consider a square root "
+                   f"transform to help normalize model errors.")
         else:
             fix = f"Apply np.sqrt(df['{col_name}']) to handle mild {direction} skew."
 
@@ -231,8 +234,9 @@ def detect_skewness(data, col_name, col_report, diagnosis, is_target=False):
         severity = 'high'
         label = 'extremely skewed'
         if is_target:
-            fix = (f"Extremely skewed target. Use a PowerTransformer (Box-Cox/Yeo-Johnson) on '{col_name}' "
-                   f"to stabilize variance and make residuals normal.")
+            fix = (f"Extremely skewed target. Use a PowerTransformer "
+                   f"(Box-Cox/Yeo-Johnson) on '{col_name}' to stabilize variance "
+                   f"and make residuals normal.")
         else:
             fix = (f"Apply sklearn.preprocessing.PowerTransformer(method='yeo-johnson') "
                    f"to column '{col_name}'.")
@@ -703,15 +707,18 @@ def suggest_models(dataset, col_names, target_col, diagnosis):
         ]
     else:
         diagnosis.model_types.append(
-            f'Task ambiguous: Target has {n_unique} unique values. Check if it is a ID or clean it.')
+            f"Task ambiguous: Target has {n_unique} unique values. "
+            f"Check if it is an ID or clean it."
+        )
 
     # ── Step D: Size and Dimensionality Advice ───────────────
 
     # 1. Dataset Size
     if n_rows < 500:
         diagnosis.add_suggestion(
-            f"Small sample ({n_rows} rows): use Cross-Validation (StratifiedKFold) "
-            f"to ensure your model generalizes.")
+            f"Small sample ({n_rows} rows): Use StratifiedKFold cross-validation "
+            f"to ensure the model generalizes."
+        )
     elif n_rows > 5000:
         diagnosis.add_suggestion(
             f"Large sample ({n_rows} rows): Gradient Boosting (LightGBM/CatBoost) "
