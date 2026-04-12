@@ -1,6 +1,6 @@
-[flake8]
-# Set the professional margin to 130 characters
-max-line-length = 130
+tr[flake8]
+# Maximum line length — must match --max-line-length in tests.yml
+max-line-length = 100
 
 # Do not scan these folders for errors
 exclude =
@@ -8,7 +8,9 @@ exclude =
     .git,
     dist,
     build,
-    *.egg-info
+    *.egg-info,
+    venv,
+    .venv
 
 # Ignore specific spacing rules to allow for manual alignment
 # (Like aligning dictionary keys or assignment operators)

@@ -284,24 +284,28 @@ class TestDiagnoseScoring(unittest.TestCase):
         """Adding a CRITICAL issue should reduce score by 25."""
         r = DiagnosisReport("test")
         r.add_issue(Issue("Test", "desc", severity="critical"))
+        # Proportional scoring (v1.0.2+): 1 critical = min(1,4)*25 = 25 pts deducted
         self.assertEqual(r.score, 75)
 
     def test_high_deducts_15(self):
         """Adding a HIGH issue should reduce score by 15."""
         r = DiagnosisReport("test")
         r.add_issue(Issue("Test", "desc", severity="high"))
+        # Proportional scoring (v1.0.2+): 1 high = min(1,4)*15 = 15 pts deducted
         self.assertEqual(r.score, 85)
 
     def test_medium_deducts_8(self):
         """Adding a MEDIUM issue should reduce score by 8."""
         r = DiagnosisReport("test")
         r.add_issue(Issue("Test", "desc", severity="medium"))
+        # First 5 medium/low count fully → 8 pts deducted
         self.assertEqual(r.score, 92)
 
     def test_low_deducts_3(self):
         """Adding a LOW issue should reduce score by 3."""
         r = DiagnosisReport("test")
         r.add_issue(Issue("Test", "desc", severity="low"))
+        # First 5 medium/low count fully → 3 pts deducted
         self.assertEqual(r.score, 97)
 
     def test_score_never_goes_below_zero(self):
@@ -309,6 +313,8 @@ class TestDiagnoseScoring(unittest.TestCase):
         r = DiagnosisReport("test")
         for _ in range(20):
             r.add_issue(Issue("Test", "desc", severity="critical"))
+        # Proportional scoring caps critical at 4 issues max (4 * 25 = 100 pts)
+        # So 20 criticals still gives score = 0 (floored), never negative
         self.assertEqual(r.score, 0)
 
     def test_messy_lower_than_clean(self):

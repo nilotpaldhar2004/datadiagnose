@@ -157,8 +157,10 @@ jobs:
       - name: Run flake8
         run: |
           flake8 datadiagnose/ \
+            --max-line-length 100 \
             --count \
             --statistics \
+            --exclude=__pycache__
 
   # ──────────────────────────────────────────────────────────
   # JOB 3: quick-check

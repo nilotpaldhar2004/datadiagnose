@@ -367,6 +367,28 @@ class TestClassImbalanceDetector(unittest.TestCase):
         combined = " ".join(report.suggestions).lower()
         self.assertIn("smote", combined)
 
+    def test_numeric_feature_not_flagged_as_imbalanced(self):
+        """Discrete numeric features (bedrooms, stories, parking) must NOT be
+        flagged as imbalanced — they are features, not class labels. (v1.0.4)"""
+        # bedrooms: [1]*2 + [2]*5 + [3]*16 + [4]*5 + [5]*1 + [6]*1
+        # This mimics a real housing dataset — majority is 3 bedrooms
+        bedrooms = [3]*16 + [2]*5 + [4]*5 + [1]*2 + [5]*1 + [6]*1
+        report, col_rep = _fresh()
+        # is_target=False because bedrooms is a feature, not the target
+        detect_class_imbalance(bedrooms, "bedrooms", col_rep, report, is_target=False)
+        self.assertEqual(len(report.issues), 0,
+                         "bedrooms (discrete numeric feature) should NOT be flagged as imbalanced")
+
+    def test_binary_numeric_feature_still_checked(self):
+        """Binary 0/1 numeric columns ARE class labels and SHOULD be checked. (v1.0.4)"""
+        # SeniorCitizen: 83% are 0, 17% are 1 → imbalanced binary feature
+        senior = [0]*42 + [1]*8
+        report, col_rep = _fresh()
+        detect_class_imbalance(senior, "SeniorCitizen", col_rep, report, is_target=False)
+        # Binary 0/1 non-target with ratio ≥ 5:1 should still be flagged
+        self.assertGreater(len(report.issues), 0,
+                           "SeniorCitizen (binary 0/1) should still be checked for imbalance")
+
 
 # ──────────────────────────────────────────────────────────────
 # 5. DATA LEAKAGE DETECTOR

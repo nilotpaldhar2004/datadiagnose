@@ -4,7 +4,7 @@
 
 [![Tests](https://github.com/nilotpaldhar2004/datadiagnose/actions/workflows/tests.yml/badge.svg)](https://github.com/nilotpaldhar2004/datadiagnose/actions)
 [![Python](https://img.shields.io/badge/python-3.7%2B-blue.svg)](https://www.python.org)
-[![Version](https://img.shields.io/badge/version-1.0.3-orange.svg)](https://github.com/nilotpaldhar2004/datadiagnose)
+[![Version](https://img.shields.io/badge/version-1.0.4-orange.svg)](https://github.com/nilotpaldhar2004/datadiagnose)
 [![License: MIT](https://img.shields.io/badge/License-MIT-green.svg)](https://github.com/nilotpaldhar2004/datadiagnose/blob/main/LICENSE)
 [![Dependencies](https://img.shields.io/badge/dependencies-none-brightgreen.svg)](https://github.com/nilotpaldhar2004/datadiagnose/blob/main/pyproject.toml)
 
@@ -46,41 +46,26 @@ Eight problems are detected automatically:
 
 ---
 
-## What Is New in v1.0.3
+## What Is New in v1.0.4
 
-### 1. Pass a pandas DataFrame directly
+### 1. Cleaner internal architecture
 
-You no longer need to call `.to_dict()` yourself. Pass a DataFrame straight into `diagnose()`:
+The redundant class imbalance pre-filter in `core.py` has been removed. All detection guards (regression target guard, numeric feature guard, binary column check) are now handled entirely inside `detectors.py` where they belong. This makes the code easier to read and extend — the detector is fully self-contained.
 
-```python
-import pandas as pd
-import datadiagnose as dd
+No change to behaviour — the output you get from `diagnose()` is identical to v1.0.3.
 
-df = pd.read_csv("my_data.csv")
+### 2. Smarter class imbalance detection (carried forward from v1.0.2)
 
-# v1.0.0 — old way (still works)
-report = dd.diagnose(df.to_dict(orient="list"), target_col="target")
+Discrete numeric feature columns like `bedrooms`, `bathrooms`, `stories`, `parking`, `AGE`, `AUCTION YEAR` are no longer falsely flagged as imbalanced. The rule is precise:
 
-# v1.0.2 — new way (simpler)
-report = dd.diagnose(df, target_col="target")
-```
+- **Text/categorical columns** (COUNTRY, TEAM, PhoneService) → imbalance checked ✅
+- **Binary numeric columns** (SeniorCitizen with values 0/1) → imbalance checked ✅
+- **Target column** → imbalance checked ✅
+- **Discrete numeric features with 3+ unique values** → stats recorded, no issue raised ✅
 
-### 2. Get a stats DataFrame with one call
+### 3. Proportional health scoring (carried forward from v1.0.2)
 
-New function `get_stats_df()` runs the full diagnosis and returns all column statistics as a Pandas DataFrame — perfect for Jupyter notebooks:
-
-```python
-import datadiagnose as dd
-
-df_stats = dd.get_stats_df(df, target_col="target")
-print(df_stats)
-```
-
-The output is a clean table where every column in your dataset is a header and every statistic (type, mean, std, missing%, skewness, outlier count, etc.) is a row. Easy to read, easy to sort, easy to export.
-
-### 3. Smarter class imbalance detection
-
-In v1.0.0, regression targets with many unique values (like house prices or salaries) were sometimes incorrectly flagged as imbalanced. This is now fixed — DataDiagnose correctly skips class imbalance checks on continuous numeric regression targets.
+Wide datasets with 20+ columns no longer score 0/100. The scoring cap means a dataset with many minor skewness warnings scores fairly, while genuinely broken data with multiple CRITICAL issues still scores near 0.
 
 ---
 
@@ -159,7 +144,7 @@ report = dd.diagnose(df, target_col="Survived")
 # Way 2 — Convert manually (original method, still works)
 report = dd.diagnose(df.to_dict(orient="list"), target_col="Survived")
 
-# Way 3 — Get all stats as a DataFrame instantly (new in v1.0.3)
+# Way 3 — Get all stats as a DataFrame instantly (new in v1.0.1)
 df_stats = dd.get_stats_df(df, target_col="Survived")
 print(df_stats)
 ```
@@ -172,7 +157,7 @@ print(df_stats)
 
 The main function. Runs all eight detectors and returns a `DiagnosisReport`.
 
-**New in v1.0.3:** accepts pandas DataFrames directly without conversion.
+**New in v1.0.1:** accepts pandas DataFrames directly without conversion.
 
 ```python
 report = diagnose(dataset, target_col="label", dataset_name="Titanic")
@@ -188,7 +173,7 @@ report.n_cols         # int
 
 ---
 
-### `get_stats_df(dataset, target_col=None)` — *new in v1.0.3*
+### `get_stats_df(dataset, target_col=None)` — *new in v1.0.1*
 
 Runs a full diagnosis and returns all column statistics as a transposed Pandas DataFrame. Metrics are rows, your dataset columns are the headers.
 
@@ -202,7 +187,7 @@ df_stats = dd.get_stats_df(my_dataset, target_col="target")
 
 ---
 
-### `report.to_df()` — *new in v1.0.3*
+### `report.to_df()` — *new in v1.0.1*
 
 Method directly on the `DiagnosisReport` object. Does the same thing as `get_stats_df()` but you call it after you already have a report.
 
@@ -416,7 +401,17 @@ To contribute:
 
 ## Changelog
 
+### v1.0.4
+- **Refactor:** Removed redundant class imbalance pre-filter from `core.py` — all guards are now handled entirely inside `detectors.py`. No behaviour change.
+
 ### v1.0.3
+- No functional changes — version bump, confirmed all v1.0.2 fixes working correctly.
+
+### v1.0.2
+- **Fixed:** Proportional health scoring system — wide datasets (20+ columns) no longer score 0/100 due to accumulated medium/low issues
+- **Fixed:** Discrete numeric feature columns (bedrooms, bathrooms, stories, AGE, AUCTION YEAR) no longer falsely flagged as class-imbalanced. Only text columns, binary 0/1 columns, and the explicit target column are checked for imbalance.
+
+### v1.0.1
 - **New:** `diagnose()` now accepts pandas DataFrames directly — no `.to_dict()` needed
 - **New:** `get_stats_df(dataset, target_col)` — returns full column statistics as a Pandas DataFrame
 - **New:** `report.to_df()` — method on DiagnosisReport to get stats table as DataFrame

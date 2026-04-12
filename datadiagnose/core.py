@@ -219,18 +219,14 @@ def diagnose(dataset, target_col=None, dataset_name='dataset'):
         if nums is not None:
             detect_outliers(data, col, col_report, report)
             detect_skewness(data, col, col_report, report)
-        # ── IMPROVED CLASS IMBALANCE LOGIC ──────────────────
-        # 1. Determine if this is the target column
+
+        # ── Class imbalance ──────────────────────────────────
+        # All guards (regression target, numeric feature, binary check)
+        # are handled internally by detect_class_imbalance() in detectors.py.
+        # No pre-filtering needed here — just pass is_target and let
+        # the detector decide whether to raise an issue or not.
         is_target = (col == target_col)
-
-        # 2. Identify if this is a Regression target (Numeric + many unique values)
-        unique_vals = set(str(v) for v in non_null_values(data))
-        is_regression_target = (is_target and nums is not None and len(unique_vals) > 20)
-
-        # 3. Only check imbalance if it's NOT a regression target
-        if not is_regression_target:
-            if is_cat or (nums is not None and len(unique_vals) <= 20):
-                detect_class_imbalance(data, col, col_report, report, is_target)
+        detect_class_imbalance(data, col, col_report, report, is_target)
 
         report.column_reports[col] = col_report
 
