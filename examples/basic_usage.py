@@ -1,4 +1,5 @@
 """
+
 examples/basic_usage.py
 =======================
 The simplest possible introduction to DataDiagnose.

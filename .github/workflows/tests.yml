@@ -3,16 +3,16 @@
 # DataDiagnose — Automated Test Runner
 # Author  : Nilotpal Dhar
 # License : MIT
-#
+
 # This workflow runs automatically on every:
 #   - push to the main branch
 #   - push to any feature branch
 #   - pull request targeting main
-#
+
 # It tests the library on:
 #   - Python 3.8, 3.9, 3.10, 3.11, 3.12
 #   - Ubuntu (Linux), macOS, Windows
-#
+
 # If ANY test fails on ANY combination, GitHub marks the
 # commit with a red ✗ and sends you an email notification.
 # A green ✓ means all 140 tests passed on all platforms.

@@ -298,6 +298,7 @@ print("""
   5. After encoding categoricals, run diagnose again.
      One-hot encoding can introduce constant columns (all-zero
      columns for rare categories). DataDiagnose will catch those.
+     
 """)
 
 print("=" * 62)
