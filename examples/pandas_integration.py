@@ -29,7 +29,7 @@ import os
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from datadiagnose import diagnose, health_score, quick_scan, get_suggestions
+from datadiagnose import diagnose, health_score, quick_scan, get_suggestions, get_stats_df
 
 print("=" * 62)
 print("  DataDiagnose + pandas Integration Example")
@@ -210,6 +210,31 @@ if PANDAS_AVAILABLE:
     for i, s in enumerate(suggestions, 1):
         print(f"    {i:2}. {s}")
 
+    # ── Step 8: get_stats_df() — stats as a DataFrame ────────
+    print("\n" + "─" * 62)
+    print("SECTION G — get_stats_df()  (all column stats as DataFrame)")
+    print("─" * 62)
+
+    print("""
+  get_stats_df() is a convenience function that runs the full
+  diagnosis and returns all column statistics as a Pandas
+  DataFrame in one call — perfect for Jupyter notebooks.
+
+  Rows    = statistics  (type, mean, std, missing_pct ...)
+  Columns = your dataset columns (customer_age, city ...)
+    """)
+
+    df_stats = get_stats_df(dataset_dict, target_col="purchased")
+    print("  Stats DataFrame (transposed — metrics as rows):\n")
+    print(df_stats.to_string())
+    print(f"\n  Shape: {df_stats.shape[0]} metrics × {df_stats.shape[1]} columns")
+
+    print("""
+  You can also call .to_df() on an existing report object:
+      report   = diagnose(dataset_dict, target_col="purchased")
+      df_stats = report.to_df()
+    """)
+
 
 # ─────────────────────────────────────────────────────────────
 # SECTION B — WITHOUT PANDAS (fallback)
@@ -278,4 +303,3 @@ print("""
 print("=" * 62)
 print("  End of pandas_integration.py")
 print("=" * 62 + "\n")
-

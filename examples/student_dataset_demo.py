@@ -43,7 +43,7 @@ from collections import Counter
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-from datadiagnose import diagnose, health_score, list_issues, get_suggestions
+from datadiagnose import diagnose, health_score, list_issues, get_suggestions, column_summary
 
 
 # ─────────────────────────────────────────────────────────────
@@ -437,6 +437,26 @@ print(f"  Improvement:          +{score_after - score_before} points  "
 
 
 # ─────────────────────────────────────────────────────────────
+# STEP 10b — COLUMN SUMMARY DEEP DIVE
+# ─────────────────────────────────────────────────────────────
+
+section(
+    "STEP 10b — column_summary()  Deep Dive",
+    "Inspect individual column statistics after cleaning."
+)
+
+print("  Use column_summary() to inspect any single column in detail.\n")
+
+for col_name in ["age", "study_hours", "city", "passed"]:
+    rep = column_summary(dataset, col_name, target_col="passed")
+    if rep:
+        print(f"  ── Column: '{col_name}' ──")
+        for key, value in rep.details.items():
+            print(f"    {key:<22} {value}")
+        print()
+
+
+# ─────────────────────────────────────────────────────────────
 # STEP 11 — FINAL COMPARISON TABLE
 # ─────────────────────────────────────────────────────────────
 
@@ -521,4 +541,3 @@ print("  End of student_dataset_demo.py")
 print(f"  Final dataset: {len(dataset)} columns, "
       f"{len(dataset['passed'])} rows, score {score_after}/100")
 print("=" * 64 + "\n")
-

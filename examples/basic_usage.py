@@ -29,6 +29,7 @@ from datadiagnose import (
     list_issues,
     get_suggestions,
     column_summary,
+    get_stats_df,
 )
 
 
@@ -246,8 +247,39 @@ def check_before_training(data, target, min_score=70):
 safe = check_before_training(dataset, target=TARGET, min_score=70)
 print(f"\n  Training allowed: {safe}")
 
+print("\n" + "─" * 60)
+print("EXAMPLE 9 — get_stats_df()  (all stats as a DataFrame)")
+print("─" * 60)
+
+# ─────────────────────────────────────────────────────────────
+# EXAMPLE 9 — get_stats_df()
+# New in v1.0.1: runs a full diagnosis and returns all column
+# statistics as a Pandas DataFrame — perfect for Jupyter notebooks.
+# Requires pandas to be installed: pip install pandas
+# ─────────────────────────────────────────────────────────────
+
+print("""
+  get_stats_df() runs diagnose() internally and returns
+  all column statistics as a Pandas DataFrame.
+
+  Each COLUMN in your dataset becomes a header.
+  Each ROW is a statistic (type, mean, std, missing_pct ...).
+
+  Requires pandas:  pip install pandas
+""")
+
+try:
+    df_stats = get_stats_df(dataset, target_col=TARGET)
+    print("  Column statistics as a DataFrame:\n")
+    print(df_stats.to_string())
+    print(f"\n  Shape: {df_stats.shape[0]} stats × {df_stats.shape[1]} columns")
+    print("\n  You can also call report.to_df() if you already have a report:")
+    print("  df_stats = report.to_df()")
+except ImportError:
+    print("  pandas is not installed — skipping get_stats_df() demo.")
+    print("  Install it with:  pip install pandas")
+
 print("\n" + "=" * 60)
 print("  End of basic_usage.py")
 print("  Next: try pandas_integration.py or student_dataset_demo.py")
 print("=" * 60 + "\n")
-
