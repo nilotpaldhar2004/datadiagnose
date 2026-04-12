@@ -13,7 +13,6 @@ exclude =
     .venv
 
 # Ignore specific spacing rules to allow for manual alignment
-# (Like aligning dictionary keys or assignment operators)
 extend-ignore =
     E203,
     W503,
